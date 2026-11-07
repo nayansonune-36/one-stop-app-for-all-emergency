@@ -87,6 +87,23 @@
     <string name="screen_bot_title">ट्राइएज इंटेलिजेंस बॉट</string>
     <string name="screen_bot_placeholder">तत्काल प्राथमिक चिकित्सा और आपातकालीन प्रश्न पूछें। ध्यान दें: एआई बॉट इंजन को ट्राइएज मॉडल से जुड़ने के लिए सक्रिय इंटरनेट कनेक्शन की आवश्यकता है।</string>
     <string name="screen_bot_offline_warning">आप वर्तमान में ऑफ़लाइन हैं। एआई बॉट से बात करने के लिए कृपया सेलुलर या वाई-फाई से पुनः कनेक्ट करें, या ऑफ़लाइन प्राथमिक चिकित्सा कार्ड का उपयोग करें।</string>
+    <string name="bot_title">ट्राइएज बॉट</string>
+    <string name="bot_subtitle">आपातकालीन एआई सहायक</string>
+    <string name="bot_offline_title">बॉट को इंटरनेट कनेक्शन चाहिए</string>
+    <string name="bot_offline_desc">केवल चैट सुविधा ऑफ़लाइन उपलब्ध नहीं है। आपकी डाउनलोड की गई प्राथमिक चिकित्सा गाइड तैयार हैं।</string>
+    <string name="bot_open_guides_button">ऑफ़लाइन गाइड खोलें</string>
+    <string name="bot_critical_alert_title">गंभीर आपातकालीन स्थिति का पता चला</string>
+    <string name="bot_critical_alert_desc">तत्काल चिकित्सीय हस्तक्षेप की आवश्यकता हो सकती है।</string>
+    <string name="bot_send_sos_button">एसओएस भेजें</string>
+    <string name="bot_call_112_button">112 पर कॉल करें</string>
+    <string name="bot_persistent_disclaimer">केवल एआई ट्राइएज मार्गदर्शन। जानलेवा आपात स्थिति में तुरंत 112 / 108 पर कॉल करें।</string>
+    <string name="bot_input_placeholder">आपातकालीन स्थिति का वर्णन करें…</string>
+    <string name="bot_send_button">भेजें</string>
+    <string name="bot_initial_greeting">मैं सही प्राथमिक उपचार कदम खोजने में आपकी सहायता कर सकता हूँ। क्या हो रहा है?</string>
+    <string name="bot_suggested_1">हाथ से गहरा खून बह रहा है</string>
+    <string name="bot_suggested_2">गले में कुछ अटक गया है</string>
+    <string name="bot_suggested_3">गर्म तरल से जल गया है</string>
+    <string name="bot_suggested_4">बेहोश होकर गिर पड़ा है</string>
 
     <!-- SOS Screen -->
     <string name="screen_sos_title">संकट बीकन प्रसारण</string>

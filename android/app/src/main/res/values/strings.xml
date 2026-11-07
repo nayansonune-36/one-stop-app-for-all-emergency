@@ -87,6 +87,23 @@
     <string name="screen_bot_title">Triage Intelligence Bot</string>
     <string name="screen_bot_placeholder">Ask urgent first-aid and medical triage questions. Note: The AI bot engine requires an active internet connection to communicate with the triage model.</string>
     <string name="screen_bot_offline_warning">You are currently offline. Please reconnect to cellular or Wi-Fi to converse with the AI triage bot, or use offline First Aid Cards.</string>
+    <string name="bot_title">Triage Bot</string>
+    <string name="bot_subtitle">Emergency AI Assistant</string>
+    <string name="bot_offline_title">Bot needs a connection</string>
+    <string name="bot_offline_desc">Chat is the only feature unavailable offline. Your downloaded first-aid guides are ready.</string>
+    <string name="bot_open_guides_button">Open offline guides</string>
+    <string name="bot_critical_alert_title">CRITICAL SITUATION DETECTED</string>
+    <string name="bot_critical_alert_desc">Immediate medical intervention may be required.</string>
+    <string name="bot_send_sos_button">Send SOS</string>
+    <string name="bot_call_112_button">Call 112</string>
+    <string name="bot_persistent_disclaimer">AI triage guidance only. In life-threatening emergencies, call 112 / 108 immediately.</string>
+    <string name="bot_input_placeholder">Describe the emergency situation…</string>
+    <string name="bot_send_button">Send</string>
+    <string name="bot_initial_greeting">I can help you find the right first-aid steps. What is happening?</string>
+    <string name="bot_suggested_1">Severe bleeding on arm</string>
+    <string name="bot_suggested_2">Person is choking</string>
+    <string name="bot_suggested_3">Burned by hot liquid</string>
+    <string name="bot_suggested_4">Fainted and unconscious</string>
 
     <!-- SOS Screen -->
     <string name="screen_sos_title">Distress Beacon Broadcast</string>

@@ -73,9 +73,13 @@ fun SentinelNavHost(
 
         composable(NavRoutes.BOT) {
             val botViewModel: BotViewModel = viewModel(
-                factory = BotViewModel.provideFactory(connectivityObserver)
+                factory = BotViewModel.provideFactory(context, connectivityObserver)
             )
-            BotScreen(viewModel = botViewModel)
+            BotScreen(
+                viewModel = botViewModel,
+                onNavigateToSos = { navController.navigate(NavRoutes.SOS) },
+                onNavigateToFirstAid = { navController.navigate(NavRoutes.FIRST_AID) }
+            )
         }
 
         composable(NavRoutes.SOS) {
@@ -86,7 +90,9 @@ fun SentinelNavHost(
         }
 
         composable(NavRoutes.FIRST_AID) {
-            val firstAidViewModel: FirstAidViewModel = viewModel()
+            val firstAidViewModel: FirstAidViewModel = viewModel(
+                factory = FirstAidViewModel.provideFactory(context)
+            )
             FirstAidScreen(
                 viewModel = firstAidViewModel,
                 onNavigateBack = { navController.popBackStack() }
