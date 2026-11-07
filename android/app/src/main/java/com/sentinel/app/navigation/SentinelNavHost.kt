@@ -1,0 +1,116 @@
+package com.sentinel.app.navigation
+
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import com.sentinel.app.core.medical.DefaultMedicalSummaryProvider
+import com.sentinel.app.core.medical.MedicalSummaryProvider
+import com.sentinel.app.core.mesh.MeshManager
+import com.sentinel.app.core.network.ConnectivityObserver
+import com.sentinel.app.feature.bot.BotScreen
+import com.sentinel.app.feature.bot.BotViewModel
+import com.sentinel.app.feature.firstaid.FirstAidScreen
+import com.sentinel.app.feature.firstaid.FirstAidViewModel
+import com.sentinel.app.feature.home.HomeScreen
+import com.sentinel.app.feature.home.HomeViewModel
+import com.sentinel.app.feature.map.MapScreen
+import com.sentinel.app.feature.map.MapViewModel
+import com.sentinel.app.feature.medical.MedicalScreen
+import com.sentinel.app.feature.medical.MedicalViewModel
+import com.sentinel.app.feature.onboarding.OnboardingScreen
+import com.sentinel.app.feature.onboarding.OnboardingViewModel
+import com.sentinel.app.feature.settings.SettingsScreen
+import com.sentinel.app.feature.settings.SettingsViewModel
+import com.sentinel.app.feature.sos.SosScreen
+import com.sentinel.app.feature.sos.SosViewModel
+
+@Composable
+fun SentinelNavHost(
+    navController: NavHostController,
+    connectivityObserver: ConnectivityObserver,
+    meshManager: MeshManager,
+    medicalSummaryProvider: MedicalSummaryProvider = DefaultMedicalSummaryProvider(),
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+
+    NavHost(
+        navController = navController,
+        startDestination = NavRoutes.HOME,
+        modifier = modifier.fillMaxSize()
+    ) {
+        composable(NavRoutes.HOME) {
+            val homeViewModel: HomeViewModel = viewModel(
+                factory = HomeViewModel.provideFactory(connectivityObserver)
+            )
+            HomeScreen(
+                viewModel = homeViewModel,
+                onNavigateToMap = { navController.navigate(NavRoutes.MAP) },
+                onNavigateToMedical = { navController.navigate(NavRoutes.MEDICAL) },
+                onNavigateToBot = { navController.navigate(NavRoutes.BOT) },
+                onNavigateToSos = { navController.navigate(NavRoutes.SOS) },
+                onNavigateToFirstAid = { navController.navigate(NavRoutes.FIRST_AID) },
+                onNavigateToSettings = { navController.navigate(NavRoutes.SETTINGS) }
+            )
+        }
+
+        composable(NavRoutes.MAP) {
+            val mapViewModel: MapViewModel = viewModel(
+                factory = MapViewModel.provideFactory(context)
+            )
+            MapScreen(viewModel = mapViewModel)
+        }
+
+        composable(NavRoutes.MEDICAL) {
+            val medicalViewModel: MedicalViewModel = viewModel()
+            MedicalScreen(viewModel = medicalViewModel)
+        }
+
+        composable(NavRoutes.BOT) {
+            val botViewModel: BotViewModel = viewModel(
+                factory = BotViewModel.provideFactory(connectivityObserver)
+            )
+            BotScreen(viewModel = botViewModel)
+        }
+
+        composable(NavRoutes.SOS) {
+            val sosViewModel: SosViewModel = viewModel(
+                factory = SosViewModel.provideFactory(context, meshManager, medicalSummaryProvider)
+            )
+            SosScreen(viewModel = sosViewModel)
+        }
+
+        composable(NavRoutes.FIRST_AID) {
+            val firstAidViewModel: FirstAidViewModel = viewModel()
+            FirstAidScreen(
+                viewModel = firstAidViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(NavRoutes.SETTINGS) {
+            val settingsViewModel: SettingsViewModel = viewModel()
+            SettingsScreen(
+                viewModel = settingsViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(NavRoutes.ONBOARDING) {
+            val onboardingViewModel: OnboardingViewModel = viewModel()
+            OnboardingScreen(
+                viewModel = onboardingViewModel,
+                onComplete = {
+                    navController.navigate(NavRoutes.HOME) {
+                        popUpTo(NavRoutes.ONBOARDING) { inclusive = true }
+                    }
+                }
+            )
+        }
+    }
+}

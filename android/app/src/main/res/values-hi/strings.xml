@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">S.E.N.T.I.N.E.L.</string>
+    <string name="app_full_title">स्मार्ट आपातकालीन नेटवर्क और ट्राइएज इंटेलिजेंस इंजन लिंक</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">होम</string>
+    <string name="nav_map">मानचित्र</string>
+    <string name="nav_firstaid">प्राथमिक चिकित्सा</string>
+    <string name="nav_bot">बॉट</string>
+    <string name="nav_settings">सेटिंग्स</string>
+    <string name="nav_medical">मेडिकल आईडी</string>
+    <string name="nav_sos">एसओएस</string>
+
+    <!-- Status -->
+    <string name="status_online">ऑनलाइन</string>
+    <string name="status_offline">ऑफलाइन</string>
+    <string name="status_mesh_active">मेश सक्रिय</string>
+
+    <!-- Home Screen -->
+    <string name="sos_button_title">आपातकालीन एसओएस</string>
+    <string name="sos_button_subtitle">संकट अलर्ट प्रसारित करने के लिए टैप करें</string>
+    <string name="section_quick_shortcuts">आपातकालीन सेवाएं और उपकरण</string>
+    <string name="shortcut_first_aid_title">प्राथमिक चिकित्सा कार्ड</string>
+    <string name="shortcut_first_aid_desc">ऑफ़लाइन चरणबद्ध जीवन रक्षक निर्देश</string>
+    <string name="shortcut_map_title">आश्रय और केंद्र मानचित्र</string>
+    <string name="shortcut_map_desc">ऑफ़लाइन आश्रय, अस्पताल और शिविर खोजें</string>
+    <string name="shortcut_medical_title">मेडिकल आईडी प्रोफ़ाइल</string>
+    <string name="shortcut_medical_desc">रक्त समूह, एलर्जी और आपातकालीन संपर्क</string>
+    <string name="shortcut_bot_title">एआई ट्राइएज बॉट</string>
+    <string name="shortcut_bot_desc">आपातकालीन ट्राइएज सहायक (इंटरनेट आवश्यक)</string>
+
+    <!-- Map Screen -->
+    <string name="screen_map_title">आपातकालीन मानचित्र और आश्रय</string>
+    <string name="screen_map_placeholder">ऑफ़लाइन मानचित्र दर्शक और निकटतम आश्रय स्थल यहां प्रदर्शित होंगे। /data/shelters.json से सत्यापित डेटा लोड किया जाएगा।</string>
+    <string name="map_nearest_title">निकटतम आपातकालीन सुविधा</string>
+    <string name="map_nearest_calculating">निकटतम सुविधा की गणना की जा रही है…</string>
+    <string name="map_location_unavailable">जीपीएस स्थान अनुपलब्ध</string>
+    <string name="map_distance_km">%1$.1f किमी दूर</string>
+    <string name="map_tap_to_view">केंद्रित करने के लिए टैप करें</string>
+    <string name="map_no_shelters_match">इस फ़िल्टर से मेल खाता कोई आश्रय नहीं</string>
+    <string name="map_offline_mode_active">ऑफ़लाइन बेस-मानचित्र (गुवाहाटी क्षेत्र)</string>
+    <string name="map_permission_rationale">अपनी स्थिति देखने और आपातकालीन आश्रयों की दूरी की गणना करने के लिए स्थान अनुमति दें।</string>
+    <string name="map_permission_grant">स्थान सक्षम करें</string>
+    <string name="map_empty_title">कोई सत्यापित आश्रय नहीं मिला</string>
+    <string name="map_empty_desc">ऑफ़लाइन आश्रय रजिस्ट्री (/data/shelters.json) वर्तमान में रिक्त है। उन्हें यहां प्रदर्शित करने के लिए सत्यापित आपातकालीन सुविधाएं जोड़ें।</string>
+
+    <!-- Map Filter & Legend -->
+    <string name="shelter_filter_all">सभी</string>
+    <string name="shelter_type_shelter">आश्रय</string>
+    <string name="shelter_type_hospital">अस्पताल</string>
+    <string name="shelter_type_relief_camp">राहत शिविर</string>
+
+    <!-- Map Shelter Detail Bottom Sheet -->
+    <string name="map_sheet_type_label">सुविधा का प्रकार</string>
+    <string name="map_sheet_address_label">पता</string>
+    <string name="map_sheet_capacity_format">क्षमता: %1$d लोग</string>
+    <string name="map_sheet_capacity_unknown">क्षमता: अज्ञात</string>
+    <string name="map_sheet_verified_format">सत्यापित: %1$s</string>
+    <string name="map_sheet_call_button">सुविधा पर कॉल करें</string>
+    <string name="map_sheet_no_phone">कोई फोन नंबर उपलब्ध नहीं है</string>
+    <string name="map_sheet_focus">मानचित्र पर केंद्रित करें</string>
+    <string name="map_sheet_close">बंद करें</string>
+
+    <!-- Medical Screen -->
+    <string name="screen_medical_title">आपातकालीन मेडिकल आईडी</string>
+    <string name="screen_medical_placeholder">अपनी आपातकालीन चिकित्सा प्रोफ़ाइल कॉन्फ़िगर करें (रक्त समूह, गंभीर एलर्जी, चिकित्सा स्थिति और आपातकालीन संपर्क)। प्रथम उत्तरदाताओं के लिए ऑफ़लाइन उपलब्ध।</string>
+
+    <!-- Bot Screen -->
+    <string name="screen_bot_title">ट्राइएज इंटेलिजेंस बॉट</string>
+    <string name="screen_bot_placeholder">तत्काल प्राथमिक चिकित्सा और आपातकालीन प्रश्न पूछें। ध्यान दें: एआई बॉट इंजन को ट्राइएज मॉडल से जुड़ने के लिए सक्रिय इंटरनेट कनेक्शन की आवश्यकता है।</string>
+    <string name="screen_bot_offline_warning">आप वर्तमान में ऑफ़लाइन हैं। एआई बॉट से बात करने के लिए कृपया सेलुलर या वाई-फाई से पुनः कनेक्ट करें, या ऑफ़लाइन प्राथमिक चिकित्सा कार्ड का उपयोग करें।</string>
+
+    <!-- SOS Screen -->
+    <string name="screen_sos_title">संकट बीकन प्रसारण</string>
+    <string name="screen_sos_placeholder">एसओएस बीकन सक्रिय है। बीएलई मेश नेटवर्क के माध्यम से आपातकालीन पैकेट प्रसारित किया जा रहा है।</string>
+
+    <!-- First Aid Screen -->
+    <string name="screen_firstaid_title">प्राथमिक चिकित्सा एक्शन कार्ड</string>
+    <string name="screen_firstaid_placeholder">सीपीआर, गंभीर रक्तस्राव, जलने, दम घुटने, फ्रैक्चर और आघात के लिए ऑफ़लाइन प्रोटोकॉल।</string>
+
+    <!-- Settings Screen -->
+    <string name="screen_settings_title">सेटिंग्स</string>
+    <string name="settings_language_label">भाषा / Language</string>
+    <string name="settings_language_desc">प्रदर्शन भाषा चुनें (परिवर्तन तुरंत प्रभावी होंगे)</string>
+    <string name="lang_english">English (अंग्रेजी)</string>
+    <string name="lang_hindi">हिन्दी (Hindi)</string>
+
+    <!-- Onboarding Screen -->
+    <string name="screen_onboarding_title">S.E.N.T.I.N.E.L. में आपका स्वागत है</string>
+    <string name="screen_onboarding_subtitle">आपदा प्रतिरोधी ऑफ़लाइन संचार और आपातकालीन ट्राइएज लिंक।</string>
+    <string name="onboarding_language_step">अपनी भाषा चुनें</string>
+    <string name="onboarding_permissions_step">आवश्यक अनुमतियां</string>
+    <string name="onboarding_permissions_desc">स्थानीय ऑफ़लाइन मेश नेटवर्क बनाने और संकट बीकन रिले करने के लिए S.E.N.T.I.N.E.L. को स्थान, ब्लूटूथ और कैमरा अनुमतियों की आवश्यकता है।</string>
+    <string name="button_get_started">शुरू करें</string>
+    <string name="button_continue">जारी रखें</string>
+    <string name="button_back">वापस</string>
+
+    <!-- Mesh Permissions -->
+    <string name="permission_required_title">ऑफ़लाइन मेश अनुमतियां</string>
+    <string name="permission_required_desc">इंटरनेट बंद होने पर संकट संदेश रिले करने के लिए S.E.N.T.I.N.E.L. ब्लूटूथ, आस-पास के डिवाइस और लोकेशन का उपयोग करता है। आपके आपातकालीन ट्रिगर के बिना कोई भी व्यक्तिगत डेटा अपलोड नहीं किया जाता है।</string>
+    <string name="permission_bluetooth_title">निकटवर्ती डिवाइस और ब्लूटूथ</string>
+    <string name="permission_bluetooth_desc">आस-पास के अन्य उपकरणों को खोजने और आपातकालीन नेटवर्क बनाने के लिए।</string>
+    <string name="permission_location_title">आपातकालीन स्थान (GPS)</string>
+    <string name="permission_location_desc">आपके एसओएस संदेश में सटीक जीपीएस स्थान जोड़ने और निकटवर्ती डिवाइस स्कैन करने के लिए।</string>
+    <string name="permission_grant_button">अनुमतियां प्रदान करें</string>
+    <string name="permission_granted">अनुमतियां प्राप्त हो चुकी हैं</string>
+    <string name="permission_warning">इन अनुमतियों के बिना ऑफ़लाइन मेश काम नहीं कर सकता।</string>
+
+    <!-- SOS Status & Mesh UI -->
+    <string name="sos_status_idle">संकट संकेत प्रसारित करने के लिए तैयार</string>
+    <string name="sos_status_searching">आस-पास के उपकरणों की खोज जारी है…</string>
+    <string name="sos_status_sent_to_devices">%1$d डिवाइस पर भेजा गया</string>
+    <string name="sos_status_delivered_server">आपातकालीन सर्वर पर सफलतापूर्वक पहुंच गया</string>
+    <string name="sos_peers_connected">सक्रिय मेश पियर्स: %1$d</string>
+    <string name="sos_press_and_hold">3 सेकंड तक दबाकर रखें</string>
+    <string name="sos_button_cancel">आपातकालीन एसओएस रद्द करें</string>
+    <string name="sos_confirm_title">आपातकालीन प्रसारण की पुष्टि करें</string>
+    <string name="sos_confirm_message">यह आपके स्थान और आपातकालीन अलर्ट को आस-पास के सभी मेश उपकरणों और राहत कर्मियों को प्रसारित करेगा। क्या आप निश्चित हैं?</string>
+    <string name="sos_confirm_yes">एसओएस प्रसारित करें</string>
+    <string name="sos_confirm_no">रद्द करें</string>
+
+    <!-- Debug Panel -->
+    <string name="debug_title">मेश डायग्नोस्टिक्स पैनल</string>
+    <string name="debug_peers_header">सक्रिय जुड़े हुए एंडपॉइंट्स</string>
+    <string name="debug_seen_ids_header">प्रसंस्कृत एसओएस आईडी कैश (%1$d)</string>
+    <string name="debug_message_log_header">मेश पैकेट गतिविधि लॉग</string>
+    <string name="debug_empty_peers">वर्तमान में कोई मेश पियर जुड़ा नहीं है</string>
+    <string name="debug_empty_seen">अभी तक कोई एसओएस आईडी दर्ज नहीं हुई है</string>
+    <string name="debug_empty_log">कोई पैकेट गतिविधि दर्ज नहीं हुई है</string>
+    <string name="debug_close_button">डायग्नोस्टिक्स बंद करें</string>
+    <string name="debug_long_press_hint">मेश डायग्नोस्टिक्स के लिए शीर्षक को देर तक दबाएं</string>
+</resources>

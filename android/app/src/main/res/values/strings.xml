@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">S.E.N.T.I.N.E.L.</string>
+    <string name="app_full_title">Smart Emergency Network &amp; Triage INtelligence Engine Link</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_map">Map</string>
+    <string name="nav_firstaid">First Aid</string>
+    <string name="nav_bot">Bot</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_medical">Medical ID</string>
+    <string name="nav_sos">SOS</string>
+
+    <!-- Status -->
+    <string name="status_online">Online</string>
+    <string name="status_offline">Offline</string>
+    <string name="status_mesh_active">Mesh Active</string>
+
+    <!-- Home Screen -->
+    <string name="sos_button_title">EMERGENCY SOS</string>
+    <string name="sos_button_subtitle">Tap to broadcast distress alert</string>
+    <string name="section_quick_shortcuts">Emergency Services &amp; Tools</string>
+    <string name="shortcut_first_aid_title">First Aid Cards</string>
+    <string name="shortcut_first_aid_desc">Offline step-by-step life saving guides</string>
+    <string name="shortcut_map_title">Shelters &amp; POI Map</string>
+    <string name="shortcut_map_desc">Locate offline shelters, hospitals &amp; camps</string>
+    <string name="shortcut_medical_title">Medical ID Profile</string>
+    <string name="shortcut_medical_desc">Blood group, allergies &amp; ICE contacts</string>
+    <string name="shortcut_bot_title">AI Triage Bot</string>
+    <string name="shortcut_bot_desc">Emergency triage assistant (requires internet)</string>
+
+    <!-- Map Screen -->
+    <string name="screen_map_title">Emergency Map &amp; Shelters</string>
+    <string name="screen_map_placeholder">Offline map viewer and nearby shelter points of interest will be rendered here. Verified data from /data/shelters.json will be loaded.</string>
+    <string name="map_nearest_title">Nearest Emergency Facility</string>
+    <string name="map_nearest_calculating">Calculating nearest facility…</string>
+    <string name="map_location_unavailable">GPS location unavailable</string>
+    <string name="map_distance_km">%1$.1f km away</string>
+    <string name="map_tap_to_view">Tap to focus</string>
+    <string name="map_no_shelters_match">No shelters match this filter</string>
+    <string name="map_offline_mode_active">Offline Basemap (Guwahati Bounding Box)</string>
+    <string name="map_permission_rationale">Enable location to view your position and calculate distances to emergency shelters.</string>
+    <string name="map_permission_grant">Enable Location</string>
+    <string name="map_empty_title">No Verified Shelters Found</string>
+    <string name="map_empty_desc">The offline shelter registry (/data/shelters.json) is currently unpopulated. Add verified emergency POIs to display them here.</string>
+
+    <!-- Map Filter & Legend -->
+    <string name="shelter_filter_all">All</string>
+    <string name="shelter_type_shelter">Shelter</string>
+    <string name="shelter_type_hospital">Hospital</string>
+    <string name="shelter_type_relief_camp">Relief Camp</string>
+
+    <!-- Map Shelter Detail Bottom Sheet -->
+    <string name="map_sheet_type_label">Facility Type</string>
+    <string name="map_sheet_address_label">Address</string>
+    <string name="map_sheet_capacity_format">Capacity: %1$d people</string>
+    <string name="map_sheet_capacity_unknown">Capacity: Unknown</string>
+    <string name="map_sheet_verified_format">Verified: %1$s</string>
+    <string name="map_sheet_call_button">Call Facility</string>
+    <string name="map_sheet_no_phone">No phone number available</string>
+    <string name="map_sheet_focus">Focus on Map</string>
+    <string name="map_sheet_close">Close</string>
+
+    <!-- Medical Screen -->
+    <string name="screen_medical_title">Emergency Medical ID</string>
+    <string name="screen_medical_placeholder">Configure your emergency medical profile (blood group, critical allergies, medical conditions, and emergency ICE contacts). Available to first responders offline.</string>
+
+    <!-- Bot Screen -->
+    <string name="screen_bot_title">Triage Intelligence Bot</string>
+    <string name="screen_bot_placeholder">Ask urgent first-aid and medical triage questions. Note: The AI bot engine requires an active internet connection to communicate with the triage model.</string>
+    <string name="screen_bot_offline_warning">You are currently offline. Please reconnect to cellular or Wi-Fi to converse with the AI triage bot, or use offline First Aid Cards.</string>
+
+    <!-- SOS Screen -->
+    <string name="screen_sos_title">Distress Beacon Broadcast</string>
+    <string name="screen_sos_placeholder">SOS beacon is active. Broadcasting emergency packet across BLE mesh and forwarding to gateway when available.</string>
+
+    <!-- First Aid Screen -->
+    <string name="screen_firstaid_title">First Aid Action Cards</string>
+    <string name="screen_firstaid_placeholder">Offline protocols for CPR, severe bleeding, burns, choking, fractures, and shock treatment.</string>
+
+    <!-- Settings Screen -->
+    <string name="screen_settings_title">Settings</string>
+    <string name="settings_language_label">Language / भाषा</string>
+    <string name="settings_language_desc">Select display language (changes take effect immediately)</string>
+    <string name="lang_english">English</string>
+    <string name="lang_hindi">हिन्दी (Hindi)</string>
+
+    <!-- Onboarding Screen -->
+    <string name="screen_onboarding_title">Welcome to S.E.N.T.I.N.E.L.</string>
+    <string name="screen_onboarding_subtitle">Disaster-resilient offline communication and emergency triage link.</string>
+    <string name="onboarding_language_step">Choose your language</string>
+    <string name="onboarding_permissions_step">Required Permissions</string>
+    <string name="onboarding_permissions_desc">S.E.N.T.I.N.E.L. requires Location, Bluetooth, and Camera permissions to form local offline mesh networks and relay distress beacons.</string>
+    <string name="button_get_started">Get Started</string>
+    <string name="button_continue">Continue</string>
+    <string name="button_back">Back</string>
+
+    <!-- Mesh Permissions -->
+    <string name="permission_required_title">Offline Mesh Permissions</string>
+    <string name="permission_required_desc">S.E.N.T.I.N.E.L. relies on Bluetooth, Nearby Devices, and Location to create peer-to-peer distress relays when internet is offline. No personal data is uploaded without your emergency trigger.</string>
+    <string name="permission_bluetooth_title">Nearby &amp; Bluetooth</string>
+    <string name="permission_bluetooth_desc">Discovers and links with nearby survivor devices to form an ad-hoc emergency network.</string>
+    <string name="permission_location_title">Emergency Location</string>
+    <string name="permission_location_desc">Used to attach your GPS coordinates to outgoing SOS alerts and required by Android to scan for nearby peers.</string>
+    <string name="permission_grant_button">Grant Permissions</string>
+    <string name="permission_granted">Permissions Granted</string>
+    <string name="permission_warning">Nearby mesh cannot function without these permissions.</string>
+
+    <!-- SOS Status & Mesh UI -->
+    <string name="sos_status_idle">Ready to broadcast distress signal</string>
+    <string name="sos_status_searching">Looking for nearby devices…</string>
+    <string name="sos_status_sent_to_devices">Sent to %1$d device(s)</string>
+    <string name="sos_status_delivered_server">Delivered to emergency server</string>
+    <string name="sos_peers_connected">Connected mesh peers: %1$d</string>
+    <string name="sos_press_and_hold">HOLD FOR 3 SECONDS</string>
+    <string name="sos_button_cancel">Cancel Emergency SOS</string>
+    <string name="sos_confirm_title">Confirm Emergency Broadcast</string>
+    <string name="sos_confirm_message">This will broadcast your location and emergency alert to all nearby mesh devices and emergency responders. Are you sure?</string>
+    <string name="sos_confirm_yes">Broadcast SOS</string>
+    <string name="sos_confirm_no">Cancel</string>
+
+    <!-- Debug Panel -->
+    <string name="debug_title">Mesh Diagnostics Panel</string>
+    <string name="debug_peers_header">Active Connected Endpoints</string>
+    <string name="debug_seen_ids_header">Bounded Seen SOS Cache (%1$d)</string>
+    <string name="debug_message_log_header">Mesh Packet Activity Log</string>
+    <string name="debug_empty_peers">No nearby mesh peers currently connected</string>
+    <string name="debug_empty_seen">No SOS IDs processed yet</string>
+    <string name="debug_empty_log">No packet activity recorded</string>
+    <string name="debug_close_button">Close Diagnostics</string>
+    <string name="debug_long_press_hint">Long-press title for mesh diagnostics</string>
+</resources>
