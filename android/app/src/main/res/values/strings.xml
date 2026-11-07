@@ -95,6 +95,17 @@
     <!-- First Aid Screen -->
     <string name="screen_firstaid_title">First Aid Action Cards</string>
     <string name="screen_firstaid_placeholder">Offline protocols for CPR, severe bleeding, burns, choking, fractures, and shock treatment.</string>
+    <string name="firstaid_title">First aid</string>
+    <string name="firstaid_subtitle_format">%1$d guides ready offline</string>
+    <string name="firstaid_offline_eyebrow">Works without internet</string>
+    <string name="firstaid_search_placeholder">Search first-aid topics…</string>
+    <string name="firstaid_clear_search">Clear search</string>
+    <string name="firstaid_hero_stay_calm">Stay calm. Follow each step in order.</string>
+    <string name="firstaid_call_emergency_note">Call 112 / 108 when safe.</string>
+    <string name="firstaid_call_emergency_desc">This guide supports, but does not replace, trained medical care.</string>
+    <string name="firstaid_important_warning">Important</string>
+    <string name="firstaid_back_to_guides">Back to all guides</string>
+    <string name="firstaid_no_results">No matching guides found</string>
 
     <!-- Settings Screen -->
     <string name="screen_settings_title">Settings</string>

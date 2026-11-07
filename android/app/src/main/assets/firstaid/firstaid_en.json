@@ -1,0 +1,142 @@
+[
+  {
+    "id": "cpr",
+    "title": "CPR",
+    "subtitle": "Cardiac emergency",
+    "icon": "heart",
+    "warning": "Use an Automated External Defibrillator (AED) as soon as one is available.",
+    "steps": [
+      "Check for responsiveness and normal breathing.",
+      "Call emergency services (112 or 108) or ask someone nearby to do so immediately.",
+      "Place heel of one hand in center of chest, other hand on top with interlocking fingers.",
+      "Deliver hard, fast compressions at a rate of 100–120 per minute at 5–6 cm depth.",
+      "Continue chest compressions continuously until emergency responders take over or AED prompts."
+    ]
+  },
+  {
+    "id": "choking",
+    "title": "Choking",
+    "subtitle": "Blocked airway",
+    "icon": "activity",
+    "warning": "If the person becomes unresponsive, lower them to the ground and begin chest compressions (CPR).",
+    "steps": [
+      "Ask 'Are you choking?' and check if the person can speak, cough, or breathe.",
+      "Lean the person slightly forward and deliver 5 firm back blows between shoulder blades with heel of hand.",
+      "If airway remains blocked, give 5 quick upward abdominal thrusts (Heimlich maneuver) just above navel.",
+      "Alternate between 5 back blows and 5 abdominal thrusts until object is expelled.",
+      "For infants under 1 year, alternate 5 back slaps with 2-finger chest thrusts only."
+    ]
+  },
+  {
+    "id": "bleeding",
+    "title": "Severe Bleeding",
+    "subtitle": "Severe wound care",
+    "icon": "droplets",
+    "warning": "Do not remove embedded objects or peel off soaked initial dressings.",
+    "steps": [
+      "Protect yourself with clean gloves or a waterproof barrier if available.",
+      "Apply firm, continuous direct pressure with sterile gauze or clean cloth directly over wound.",
+      "Keep pressure constant for at least 5 minutes; layer additional pads if blood soaks through.",
+      "Elevate the injured limb above heart level only if no broken bones are suspected.",
+      "If severe bleeding continues on a limb, apply a commercial tourniquet 5–7 cm above the wound."
+    ]
+  },
+  {
+    "id": "burns",
+    "title": "Burns",
+    "subtitle": "Heat or chemical injury",
+    "icon": "flame",
+    "warning": "Never apply ice, butter, oils, toothpaste, or adhesive dressings to burns.",
+    "steps": [
+      "Ensure personal safety, remove heat source, and gently take off hot non-adherent clothing.",
+      "Cool the burn under clean, cool running water for at least 20 minutes.",
+      "Carefully remove rings, watches, or restrictive clothing before swelling develops.",
+      "Loosely cover burned skin with sterile non-stick dressing or clean plastic wrap.",
+      "Seek emergency hospital treatment immediately for deep, chemical, electrical, or extensive burns."
+    ]
+  },
+  {
+    "id": "fractures",
+    "title": "Fractures & Sprains",
+    "subtitle": "Bone and joint injury",
+    "icon": "zap",
+    "warning": "Never attempt to straighten a deformed limb or push an exposed bone back in.",
+    "steps": [
+      "Instruct the injured person to remain completely still and support the injured limb in place.",
+      "Control any open bleeding with gentle pressure around the wound, avoiding bone pressure.",
+      "Apply an ice pack wrapped in a cloth for 15–20 minutes at a time to reduce swelling.",
+      "Splint the joint above and below the fracture only if transport is unavoidable and you are trained.",
+      "Check frequently for pulse, warmth, and sensation beyond the injured area."
+    ]
+  },
+  {
+    "id": "seizures",
+    "title": "Seizures",
+    "subtitle": "Protect and monitor",
+    "icon": "shield_alert",
+    "warning": "Do not restrain the person, and never place fingers, spoons, or objects into their mouth.",
+    "steps": [
+      "Guide the person safely away from hard edges, traffic, water, and sharp objects.",
+      "Place a folded jacket or soft cushion under their head to protect from impact trauma.",
+      "Note the start time of the seizure and gently loosen tight collars, ties, or neckwear.",
+      "Once active convulsions cease, roll the person onto their side into recovery position to clear airway.",
+      "Stay calmly beside them until fully alert; call 112 if seizure lasts over 5 minutes or repeats."
+    ]
+  },
+  {
+    "id": "heatstroke",
+    "title": "Heatstroke",
+    "subtitle": "Dangerous overheating",
+    "icon": "sun",
+    "warning": "Heatstroke is a medical emergency. Rapid whole-body cooling takes priority.",
+    "steps": [
+      "Move the patient immediately into dense shade or an air-conditioned room/vehicle.",
+      "Remove heavy outer clothing to expose as much skin as possible.",
+      "Immerse in cold water, or spray continuous cool water while actively fanning their skin.",
+      "Apply ice packs or cold wet towels to armpits, groin, neck, and back.",
+      "Never force fluids if patient is confused, drowsy, or unconscious."
+    ]
+  },
+  {
+    "id": "snakebite",
+    "title": "Snake Bite",
+    "subtitle": "Venomous puncture injury",
+    "icon": "shield_alert",
+    "warning": "Do NOT cut the wound, suck out venom, apply ice, or tie a tight arterial tourniquet.",
+    "steps": [
+      "Keep the patient calm and completely still; physical movement accelerates venom circulation.",
+      "Remove rings, bangles, anklets, and shoes before rapid limb swelling occurs.",
+      "Immobilize the bitten limb at or slightly below heart level with a splint.",
+      "Apply a firm crepe bandage starting from fingers/toes up the limb if trained in pressure immobilization.",
+      "Transport immediately to the nearest hospital with Anti-Snake Venom (ASV) availability."
+    ]
+  },
+  {
+    "id": "hypothermia",
+    "title": "Shock & Hypothermia",
+    "subtitle": "Low perfusion & extreme cold",
+    "icon": "droplets",
+    "warning": "Do not apply direct intense heat (radiators, hot water) which can cause cardiovascular collapse.",
+    "steps": [
+      "Lay the person flat and elevate their legs 20–30 cm unless head, neck, or spinal injury is suspected.",
+      "Remove damp, cold clothing gently and replace with warm, dry blankets or emergency thermal foil.",
+      "Insulate the patient from cold ground using a sleeping mat, coats, or tarp underneath.",
+      "Cover their head and neck while keeping face exposed to preserve core body heat.",
+      "Offer warm sweet non-caffeinated drinks only if the patient is fully conscious and swallowing easily."
+    ]
+  },
+  {
+    "id": "poisoning",
+    "title": "Poisoning & Ingestion",
+    "subtitle": "Toxic substance exposure",
+    "icon": "activity",
+    "warning": "Do not induce vomiting unless specifically instructed by a medical toxicologist.",
+    "steps": [
+      "Identify the toxic chemical, plant, pesticide, or medication container if safe to do so.",
+      "If the substance is on skin or eyes, irrigate copiously with clean running water for 15–20 minutes.",
+      "If toxic gas or fumes were inhaled, bring victim into fresh open air immediately.",
+      "Place an unconscious breathing victim into the lateral recovery position.",
+      "Call National Poison Information Centre (1800-116-117) or 112 immediately with product details."
+    ]
+  }
+]

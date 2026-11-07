@@ -95,6 +95,17 @@
     <!-- First Aid Screen -->
     <string name="screen_firstaid_title">प्राथमिक चिकित्सा एक्शन कार्ड</string>
     <string name="screen_firstaid_placeholder">सीपीआर, गंभीर रक्तस्राव, जलने, दम घुटने, फ्रैक्चर और आघात के लिए ऑफ़लाइन प्रोटोकॉल।</string>
+    <string name="firstaid_title">प्राथमिक चिकित्सा</string>
+    <string name="firstaid_subtitle_format">%1$d गाइड ऑफ़लाइन उपलब्ध</string>
+    <string name="firstaid_offline_eyebrow">बिना इंटरनेट के काम करता है</string>
+    <string name="firstaid_search_placeholder">प्राथमिक चिकित्सा विषय खोजें…</string>
+    <string name="firstaid_clear_search">खोज साफ़ करें</string>
+    <string name="firstaid_hero_stay_calm">शांत रहें। प्रत्येक चरण का क्रमवार पालन करें।</string>
+    <string name="firstaid_call_emergency_note">सुरक्षित होने पर 112 / 108 पर कॉल करें।</string>
+    <string name="firstaid_call_emergency_desc">यह मार्गदर्शिका प्रशिक्षित चिकित्सा देखभाल का समर्थन करती है, लेकिन उसका स्थान नहीं लेती।</string>
+    <string name="firstaid_important_warning">महत्वपूर्ण सावधानी</string>
+    <string name="firstaid_back_to_guides">सभी गाइड पर वापस जाएं</string>
+    <string name="firstaid_no_results">कोई मेल खाती गाइड नहीं मिली</string>
 
     <!-- Settings Screen -->
     <string name="screen_settings_title">सेटिंग्स</string>
