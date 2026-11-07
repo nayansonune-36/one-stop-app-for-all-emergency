@@ -82,6 +82,59 @@
     <!-- Medical Screen -->
     <string name="screen_medical_title">Emergency Medical ID</string>
     <string name="screen_medical_placeholder">Configure your emergency medical profile (blood group, critical allergies, medical conditions, and emergency ICE contacts). Available to first responders offline.</string>
+    <string name="medical_title">Medical ID</string>
+    <string name="medical_saved_on_device">Saved on this device</string>
+    <string name="medical_protected_on_device">Protected on device</string>
+    <string name="medical_offline_available">Emergency information · Offline available</string>
+    <string name="medical_disclaimer">First responders may look for Medical ID information. Keep it accurate and concise.</string>
+    <string name="medical_field_name">Full name</string>
+    <string name="medical_field_age">Age</string>
+    <string name="medical_field_blood">Blood group</string>
+    <string name="medical_field_allergies">Allergies</string>
+    <string name="medical_field_conditions">Medical conditions</string>
+    <string name="medical_field_medications">Medications</string>
+    <string name="medical_field_contact_name">Emergency contact</string>
+    <string name="medical_field_contact_phone">Contact phone</string>
+    <string name="medical_field_notes">Additional notes</string>
+    <string name="medical_placeholder_name">Your name</string>
+    <string name="medical_placeholder_age">Age</string>
+    <string name="medical_placeholder_blood">Unknown</string>
+    <string name="medical_placeholder_none">None known</string>
+    <string name="medical_placeholder_meds">None</string>
+    <string name="medical_placeholder_notes">Important details</string>
+    <string name="medical_btn_edit">Edit</string>
+    <string name="medical_btn_save">Save locally</string>
+    <string name="medical_btn_cancel">Cancel changes</string>
+    <string name="medical_btn_open_scanner">Open QR scanner</string>
+    <string name="medical_btn_open_scanner_sub">Scan a Medical ID QR code</string>
+    <string name="medical_btn_share_qr">Share emergency QR</string>
+    <string name="medical_btn_share_qr_sub">Show your Medical ID summary</string>
+    <string name="medical_lock_title">Medical ID locked</string>
+    <string name="medical_lock_desc">Enter your 4-digit PIN or use biometric unlock.</string>
+    <string name="medical_lock_btn_unlock">Unlock</string>
+    <string name="medical_lock_btn_biometric">Use biometric unlock</string>
+    <string name="medical_lock_pin_placeholder">••••</string>
+    <string name="medical_lock_incorrect_pin">Incorrect PIN.</string>
+    <string name="medical_name_required">Name is required before saving.</string>
+    <string name="medical_saved_success">Medical ID saved locally.</string>
+    <string name="medical_unlocked_success">Medical ID unlocked.</string>
+    <string name="medical_imported_success">Medical ID imported with your consent.</string>
+    <string name="qr_modal_title">Emergency Medical ID</string>
+    <string name="qr_modal_desc">Scan this QR code with any SENTINEL device to view offline emergency medical details.</string>
+    <string name="qr_modal_close">Close QR</string>
+    <string name="qr_scan_title">Scan QR code</string>
+    <string name="qr_scan_hint">Place a Medical ID QR code inside the frame</string>
+    <string name="qr_torch_on">Turn flashlight on</string>
+    <string name="qr_torch_off">Turn flashlight off</string>
+    <string name="qr_camera_permission_needed">Camera access needed</string>
+    <string name="qr_camera_permission_desc">Camera access is used only while this screen is open to scan Medical ID QR codes.</string>
+    <string name="qr_allow_camera">Allow camera</string>
+    <string name="qr_invalid_code">This QR code does not contain supported Medical ID information. Check the code and try again.</string>
+    <string name="qr_found_title">Medical ID found</string>
+    <string name="qr_found_desc">Review the decoded information. Import it only with the person’s consent.</string>
+    <string name="qr_btn_import">Consent confirmed · Import Medical ID</string>
+    <string name="qr_btn_scan_again">Scan another code</string>
+    <string name="qr_privacy_note">Camera frames stay on this device.</string>
 
     <!-- Bot Screen -->
     <string name="screen_bot_title">Triage Intelligence Bot</string>
@@ -140,6 +193,7 @@
     <string name="button_get_started">Get Started</string>
     <string name="button_continue">Continue</string>
     <string name="button_back">Back</string>
+    <string name="btn_back">Back</string>
 
     <!-- Mesh Permissions -->
     <string name="permission_required_title">Offline Mesh Permissions</string>

@@ -22,6 +22,7 @@ import com.sentinel.app.feature.map.MapScreen
 import com.sentinel.app.feature.map.MapViewModel
 import com.sentinel.app.feature.medical.MedicalScreen
 import com.sentinel.app.feature.medical.MedicalViewModel
+import com.sentinel.app.feature.medical.QrScanScreen
 import com.sentinel.app.feature.onboarding.OnboardingScreen
 import com.sentinel.app.feature.onboarding.OnboardingViewModel
 import com.sentinel.app.feature.settings.SettingsScreen
@@ -67,8 +68,27 @@ fun SentinelNavHost(
         }
 
         composable(NavRoutes.MEDICAL) {
-            val medicalViewModel: MedicalViewModel = viewModel()
-            MedicalScreen(viewModel = medicalViewModel)
+            val medicalViewModel: MedicalViewModel = viewModel(
+                factory = MedicalViewModel.provideFactory(context)
+            )
+            MedicalScreen(
+                viewModel = medicalViewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToScanner = { navController.navigate(NavRoutes.QR_SCANNER) }
+            )
+        }
+
+        composable(NavRoutes.QR_SCANNER) {
+            val medicalViewModel: MedicalViewModel = viewModel(
+                factory = MedicalViewModel.provideFactory(context)
+            )
+            QrScanScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onProfileImported = { profile ->
+                    medicalViewModel.importProfile(profile)
+                    navController.popBackStack()
+                }
+            )
         }
 
         composable(NavRoutes.BOT) {

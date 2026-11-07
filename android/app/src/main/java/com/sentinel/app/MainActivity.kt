@@ -10,9 +10,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.sentinel.app.core.medical.DefaultMedicalSummaryProvider
 import com.sentinel.app.core.mesh.MeshManager
 import com.sentinel.app.core.network.NetworkConnectivityObserver
+import com.sentinel.app.feature.medical.data.MedicalRepository
 import com.sentinel.app.navigation.NavRoutes
 import com.sentinel.app.navigation.SentinelBottomBar
 import com.sentinel.app.navigation.SentinelNavHost
@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
 
         connectivityObserver = NetworkConnectivityObserver(applicationContext)
         meshManager = MeshManager(applicationContext, connectivityObserver)
-        val medicalSummaryProvider = DefaultMedicalSummaryProvider()
+        val medicalSummaryProvider = MedicalRepository(applicationContext)
 
         setContent {
             SentinelTheme {

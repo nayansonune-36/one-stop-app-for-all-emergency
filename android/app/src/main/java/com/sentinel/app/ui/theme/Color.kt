@@ -40,6 +40,7 @@ val LightAmberText = Color(0xFF955C04)
 
 // Backward Compatibility Aliases
 val DarkNavyBackground = DarkPaper
+val DarkNavyBg = DarkPaper
 val DarkNavySurface = DarkCard
 val DarkNavySurfaceVariant = DarkSoft
 val DarkNavyCard = DarkCard
@@ -49,8 +50,10 @@ val TextSecondary = DarkMuted
 val TextMuted = DarkMuted
 
 val StatusOnline = DarkGreen
+val GreenOnline = DarkGreen
 val StatusOffline = RedPrimary
 val StatusWarning = DarkAmber
 
+val RedSurface = Color(0x26E53935)
 val AccentCyan = Color(0xFF38BDF8)
 val DividerBorder = DarkLine
