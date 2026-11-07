@@ -39,10 +39,12 @@ fun SentinelNavHost(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val prefs = context.getSharedPreferences("sentinel_prefs", android.content.Context.MODE_PRIVATE)
+    val isOnboardingComplete = prefs.getBoolean(OnboardingViewModel.KEY_ONBOARDING_COMPLETE, false)
 
     NavHost(
         navController = navController,
-        startDestination = NavRoutes.HOME,
+        startDestination = if (isOnboardingComplete) NavRoutes.HOME else NavRoutes.ONBOARDING,
         modifier = modifier.fillMaxSize()
     ) {
         composable(NavRoutes.HOME) {
@@ -128,7 +130,9 @@ fun SentinelNavHost(
         }
 
         composable(NavRoutes.ONBOARDING) {
-            val onboardingViewModel: OnboardingViewModel = viewModel()
+            val onboardingViewModel: OnboardingViewModel = viewModel(
+                factory = OnboardingViewModel.provideFactory(context)
+            )
             OnboardingScreen(
                 viewModel = onboardingViewModel,
                 onComplete = {
