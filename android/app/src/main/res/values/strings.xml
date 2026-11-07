@@ -125,13 +125,31 @@
     <string name="permission_warning">Nearby mesh cannot function without these permissions.</string>
 
     <!-- SOS Status & Mesh UI -->
+    <string name="sos_active_badge">SOS ACTIVE</string>
+    <string name="sos_timer_label">Emergency request elapsed</string>
+    <string name="sos_seconds_elapsed">%1$d seconds</string>
+    <string name="sos_hops_label">Relay hops: %1$d</string>
+    <string name="sos_queued_locally">SOS queued locally – awaiting connection</string>
+    <string name="sos_location_label">Location coordinates</string>
+    <string name="sos_location_unavailable">GPS location unavailable</string>
+    <string name="sos_comm_status_label">Mesh communication status</string>
+    <string name="sos_bluetooth_disabled_title">Bluetooth is turned off</string>
+    <string name="sos_bluetooth_disabled_desc">Offline mesh requires Bluetooth to discover and communicate with nearby survivor devices.</string>
+    <string name="sos_enable_bluetooth_button">Open Bluetooth Settings</string>
+    <string name="sos_location_disabled_title">Location service is turned off</string>
+    <string name="sos_location_disabled_desc">GPS coordinates cannot be attached to your distress beacon without Location enabled.</string>
+    <string name="sos_enable_location_button">Open Location Settings</string>
+    <string name="sos_cancel_dialog_title">End Emergency Request?</string>
+    <string name="sos_cancel_dialog_message">Are you sure you want to stop broadcasting this SOS beacon to nearby devices and emergency responders?</string>
+    <string name="sos_cancel_dialog_confirm">End SOS</string>
+    <string name="sos_cancel_dialog_keep">Keep Broadcasting</string>
     <string name="sos_status_idle">Ready to broadcast distress signal</string>
     <string name="sos_status_searching">Looking for nearby devices…</string>
     <string name="sos_status_sent_to_devices">Sent to %1$d device(s)</string>
     <string name="sos_status_delivered_server">Delivered to emergency server</string>
     <string name="sos_peers_connected">Connected mesh peers: %1$d</string>
     <string name="sos_press_and_hold">HOLD FOR 3 SECONDS</string>
-    <string name="sos_button_cancel">Cancel Emergency SOS</string>
+    <string name="sos_button_cancel">End Emergency SOS</string>
     <string name="sos_confirm_title">Confirm Emergency Broadcast</string>
     <string name="sos_confirm_message">This will broadcast your location and emergency alert to all nearby mesh devices and emergency responders. Are you sure?</string>
     <string name="sos_confirm_yes">Broadcast SOS</string>

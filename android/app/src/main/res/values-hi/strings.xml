@@ -125,13 +125,31 @@
     <string name="permission_warning">इन अनुमतियों के बिना ऑफ़लाइन मेश काम नहीं कर सकता।</string>
 
     <!-- SOS Status & Mesh UI -->
+    <string name="sos_active_badge">एसओएस सक्रिय</string>
+    <string name="sos_timer_label">आपातकालीन अनुरोध बीता समय</string>
+    <string name="sos_seconds_elapsed">%1$d सेकंड</string>
+    <string name="sos_hops_label">रिले हॉप्स: %1$d</string>
+    <string name="sos_queued_locally">एसओएस स्थानीय रूप से कतारबद्ध - कनेक्शन की प्रतीक्षा</string>
+    <string name="sos_location_label">स्थान निर्देशांक</string>
+    <string name="sos_location_unavailable">जीपीएस स्थान अनुपलब्ध</string>
+    <string name="sos_comm_status_label">मेश संचार स्थिति</string>
+    <string name="sos_bluetooth_disabled_title">ब्लूटूथ बंद है</string>
+    <string name="sos_bluetooth_disabled_desc">ऑफ़लाइन मेश नेटवर्क को आस-पास के उपकरणों को खोजने के लिए ब्लूटूथ की आवश्यकता है।</string>
+    <string name="sos_enable_bluetooth_button">ब्लूटूथ सेटिंग्स खोलें</string>
+    <string name="sos_location_disabled_title">स्थान सेवा बंद है</string>
+    <string name="sos_location_disabled_desc">स्थान सेवाओं के बिना आपातकालीन जीपीएस निर्देशांक संलग्न नहीं किए जा सकते।</string>
+    <string name="sos_enable_location_button">स्थान सेटिंग्स खोलें</string>
+    <string name="sos_cancel_dialog_title">आपातकालीन अनुरोध समाप्त करें?</string>
+    <string name="sos_cancel_dialog_message">क्या आप वाकई आस-पास के उपकरणों और राहत कर्मियों को इस एसओएस बीकन का प्रसारण बंद करना चाहते हैं?</string>
+    <string name="sos_cancel_dialog_confirm">अनुरोध समाप्त करें</string>
+    <string name="sos_cancel_dialog_keep">प्रसारण जारी रखें</string>
     <string name="sos_status_idle">संकट संकेत प्रसारित करने के लिए तैयार</string>
     <string name="sos_status_searching">आस-पास के उपकरणों की खोज जारी है…</string>
     <string name="sos_status_sent_to_devices">%1$d डिवाइस पर भेजा गया</string>
     <string name="sos_status_delivered_server">आपातकालीन सर्वर पर सफलतापूर्वक पहुंच गया</string>
     <string name="sos_peers_connected">सक्रिय मेश पियर्स: %1$d</string>
     <string name="sos_press_and_hold">3 सेकंड तक दबाकर रखें</string>
-    <string name="sos_button_cancel">आपातकालीन एसओएस रद्द करें</string>
+    <string name="sos_button_cancel">आपातकालीन एसओएस समाप्त करें</string>
     <string name="sos_confirm_title">आपातकालीन प्रसारण की पुष्टि करें</string>
     <string name="sos_confirm_message">यह आपके स्थान और आपातकालीन अलर्ट को आस-पास के सभी मेश उपकरणों और राहत कर्मियों को प्रसारित करेगा। क्या आप निश्चित हैं?</string>
     <string name="sos_confirm_yes">एसओएस प्रसारित करें</string>
