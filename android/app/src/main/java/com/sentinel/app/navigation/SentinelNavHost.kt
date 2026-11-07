@@ -46,7 +46,7 @@ fun SentinelNavHost(
     ) {
         composable(NavRoutes.HOME) {
             val homeViewModel: HomeViewModel = viewModel(
-                factory = HomeViewModel.provideFactory(connectivityObserver)
+                factory = HomeViewModel.provideFactory(context, connectivityObserver)
             )
             HomeScreen(
                 viewModel = homeViewModel,

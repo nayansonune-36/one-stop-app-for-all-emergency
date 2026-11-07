@@ -17,18 +17,35 @@
     <string name="status_offline">Offline</string>
     <string name="status_mesh_active">Mesh Active</string>
 
-    <!-- Home Screen -->
+    <!-- Home Screen UI v2 -->
     <string name="sos_button_title">EMERGENCY SOS</string>
-    <string name="sos_button_subtitle">Tap to broadcast distress alert</string>
-    <string name="section_quick_shortcuts">Emergency Services &amp; Tools</string>
-    <string name="shortcut_first_aid_title">First Aid Cards</string>
-    <string name="shortcut_first_aid_desc">Offline step-by-step life saving guides</string>
-    <string name="shortcut_map_title">Shelters &amp; POI Map</string>
-    <string name="shortcut_map_desc">Locate offline shelters, hospitals &amp; camps</string>
-    <string name="shortcut_medical_title">Medical ID Profile</string>
-    <string name="shortcut_medical_desc">Blood group, allergies &amp; ICE contacts</string>
-    <string name="shortcut_bot_title">AI Triage Bot</string>
-    <string name="shortcut_bot_desc">Emergency triage assistant (requires internet)</string>
+    <string name="brand_subtitle">Emergency readiness</string>
+    <string name="greeting_morning">Good morning</string>
+    <string name="greeting_afternoon">Good afternoon</string>
+    <string name="greeting_evening">Good evening</string>
+    <string name="home_headline">Ready when it matters.</string>
+    <string name="home_sos_hold_hint">Press and hold for 3 seconds to broadcast emergency SOS</string>
+    <string name="home_sos_tap_hint">Tap for confirmation dialog</string>
+    <string name="home_quick_access">Quick access</string>
+    <string name="home_essential_tools">Essential tools</string>
+    <string name="home_shortcut_map_title">Safety map</string>
+    <string name="home_shortcut_map_sub">Nearby help</string>
+    <string name="home_shortcut_medical_title">Medical ID</string>
+    <string name="home_shortcut_medical_sub">Your details</string>
+    <string name="home_shortcut_bot_title">Aid bot</string>
+    <string name="home_shortcut_bot_sub_online">Ask online</string>
+    <string name="home_shortcut_bot_sub_offline">Offline</string>
+    <string name="home_shortcut_aid_title">First aid</string>
+    <string name="home_shortcut_aid_sub">%1$d guides</string>
+    <string name="home_learn_prepare">Learn &amp; prepare</string>
+    <string name="home_firstaid_essentials">First-aid essentials</string>
+    <string name="home_view_all">View all</string>
+    <string name="home_disclaimer_title">Safety notice:</string>
+    <string name="home_disclaimer_body">This app supports, but does not replace, 112 / 108.</string>
+    <string name="aid_topic_cpr">CPR</string>
+    <string name="aid_topic_bleeding">Wound Care</string>
+    <string name="aid_topic_burns">Burns</string>
+    <string name="aid_topic_choking">Choking</string>
 
     <!-- Map Screen -->
     <string name="screen_map_title">Emergency Map &amp; Shelters</string>

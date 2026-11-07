@@ -17,18 +17,35 @@
     <string name="status_offline">ऑफलाइन</string>
     <string name="status_mesh_active">मेश सक्रिय</string>
 
-    <!-- Home Screen -->
+    <!-- Home Screen UI v2 -->
     <string name="sos_button_title">आपातकालीन एसओएस</string>
-    <string name="sos_button_subtitle">संकट अलर्ट प्रसारित करने के लिए टैप करें</string>
-    <string name="section_quick_shortcuts">आपातकालीन सेवाएं और उपकरण</string>
-    <string name="shortcut_first_aid_title">प्राथमिक चिकित्सा कार्ड</string>
-    <string name="shortcut_first_aid_desc">ऑफ़लाइन चरणबद्ध जीवन रक्षक निर्देश</string>
-    <string name="shortcut_map_title">आश्रय और केंद्र मानचित्र</string>
-    <string name="shortcut_map_desc">ऑफ़लाइन आश्रय, अस्पताल और शिविर खोजें</string>
-    <string name="shortcut_medical_title">मेडिकल आईडी प्रोफ़ाइल</string>
-    <string name="shortcut_medical_desc">रक्त समूह, एलर्जी और आपातकालीन संपर्क</string>
-    <string name="shortcut_bot_title">एआई ट्राइएज बॉट</string>
-    <string name="shortcut_bot_desc">आपातकालीन ट्राइएज सहायक (इंटरनेट आवश्यक)</string>
+    <string name="brand_subtitle">आपदा तैयारी</string>
+    <string name="greeting_morning">शुभ प्रभात</string>
+    <string name="greeting_afternoon">शुभ दोपहर</string>
+    <string name="greeting_evening">शुभ संध्या</string>
+    <string name="home_headline">ज़रूरत के समय हमेशा तैयार।</string>
+    <string name="home_sos_hold_hint">आपातकालीन एसओएस प्रसारित करने के लिए 3 सेकंड तक दबाकर रखें</string>
+    <string name="home_sos_tap_hint">पुष्टि संवाद के लिए टैप करें</string>
+    <string name="home_quick_access">त्वरित पहुंच</string>
+    <string name="home_essential_tools">आवश्यक उपकरण</string>
+    <string name="home_shortcut_map_title">सुरक्षा मानचित्र</string>
+    <string name="home_shortcut_map_sub">निकटवर्ती सहायता</string>
+    <string name="home_shortcut_medical_title">मेडिकल आईडी</string>
+    <string name="home_shortcut_medical_sub">आपके विवरण</string>
+    <string name="home_shortcut_bot_title">सहायक बॉट</string>
+    <string name="home_shortcut_bot_sub_online">ऑनलाइन पूछें</string>
+    <string name="home_shortcut_bot_sub_offline">ऑफ़लाइन</string>
+    <string name="home_shortcut_aid_title">प्राथमिक चिकित्सा</string>
+    <string name="home_shortcut_aid_sub">%1$d गाइड</string>
+    <string name="home_learn_prepare">सीखें और तैयार रहें</string>
+    <string name="home_firstaid_essentials">प्राथमिक चिकित्सा अनिवार्यताएं</string>
+    <string name="home_view_all">सभी देखें</string>
+    <string name="home_disclaimer_title">सुरक्षा सूचना:</string>
+    <string name="home_disclaimer_body">यह ऐप 112 / 108 का समर्थन करता है, लेकिन उसका स्थान नहीं लेता है।</string>
+    <string name="aid_topic_cpr">सीपीआर</string>
+    <string name="aid_topic_bleeding">घाव की देखभाल</string>
+    <string name="aid_topic_burns">जलना</string>
+    <string name="aid_topic_choking">दम घुटना</string>
 
     <!-- Map Screen -->
     <string name="screen_map_title">आपातकालीन मानचित्र और आश्रय</string>
