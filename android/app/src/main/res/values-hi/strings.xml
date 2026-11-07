@@ -179,10 +179,49 @@
 
     <!-- Settings Screen -->
     <string name="screen_settings_title">सेटिंग्स</string>
+    <string name="settings_title">सेटिंग्स</string>
+    <string name="settings_subtitle">डिवाइस प्राथमिकताएँ</string>
+    <string name="settings_profile_subtitle">इस डिवाइस पर आपातकालीन प्रोफ़ाइल</string>
+    <string name="settings_section_general">सामान्य</string>
     <string name="settings_language_label">भाषा / Language</string>
     <string name="settings_language_desc">प्रदर्शन भाषा चुनें (परिवर्तन तुरंत प्रभावी होंगे)</string>
+    <string name="settings_language_title">भाषा</string>
+    <string name="settings_language_desc_short">ऐप की भाषा</string>
     <string name="lang_english">English (अंग्रेजी)</string>
     <string name="lang_hindi">हिन्दी (Hindi)</string>
+    <string name="settings_notifications_title">सुरक्षा सूचनाएँ</string>
+    <string name="settings_notifications_desc">स्थानीय तैयारी के अनुस्मारक</string>
+    <string name="settings_section_security">सुरक्षा और चिकित्सीय पहचान</string>
+    <string name="settings_lock_title">चिकित्सीय पहचान लॉक करें</string>
+    <string name="settings_lock_desc">बदलाव से पहले अनलॉक आवश्यक</string>
+    <string name="settings_pin_title">PIN बदलें</string>
+    <string name="settings_pin_set">PIN सेट है</string>
+    <string name="settings_pin_not_set">कोई PIN सेट नहीं है</string>
+    <string name="settings_section_permissions">अनुमतियाँ</string>
+    <string name="settings_perm_location_title">स्थान की अनुमति</string>
+    <string name="settings_perm_location_desc">आपकी स्थिति और आस-पास के आश्रय स्थल दिखाने के लिए स्थान की अनुमति चाहिए।</string>
+    <string name="settings_perm_camera_title">कैमरे की अनुमति</string>
+    <string name="settings_perm_camera_desc">चिकित्सीय पहचान QR कोड स्कैन करने के लिए कैमरे की अनुमति चाहिए।</string>
+    <string name="settings_perm_mic_title">माइक्रोफ़ोन की अनुमति</string>
+    <string name="settings_perm_mic_desc">माइक्रोफ़ोन की अनुमति से प्राथमिक उपचार चैट में आवाज़ से प्रश्न पूछे जा सकते हैं।</string>
+    <string name="settings_perm_notif_title">सूचनाओं की अनुमति</string>
+    <string name="settings_perm_notif_desc">सूचनाएँ आपातकालीन और सुरक्षा अलर्ट दिखा सकती हैं।</string>
+    <string name="settings_perm_bluetooth_title">ब्लूटूथ की अनुमति</string>
+    <string name="settings_perm_bluetooth_desc">समर्थित होने पर ब्लूटूथ आस-पास के SOS रिले से जुड़ सकता है।</string>
+    <string name="settings_perm_manage">प्रबंधित करें</string>
+    <string name="settings_perm_settings">डिवाइस सेटिंग्स खोलें</string>
+    <string name="settings_section_info">जानकारी</string>
+    <string name="settings_about_title">के बारे में</string>
+    <string name="settings_privacy_title">गोपनीयता</string>
+    <string name="settings_privacy_desc">स्थानीय डेटा और अनुमतियाँ</string>
+    <string name="settings_disclaimer_title">सुरक्षा अस्वीकरण</string>
+    <string name="settings_disclaimer_desc">महत्वपूर्ण सीमाएँ</string>
+    <string name="settings_pin_dialog_title">चार अंकों का PIN</string>
+    <string name="settings_pin_dialog_desc">यह PIN इस डिवाइस पर सहेजा जाता है। ऐसा PIN न रखें जिसका उपयोग आप कहीं और करते हैं।</string>
+    <string name="settings_pin_save">PIN सहेजें</string>
+    <string name="settings_toast_language_saved">भाषा प्राथमिकता सहेजी गई।</string>
+    <string name="settings_toast_pin_saved">PIN इस डिवाइस पर सहेजा गया।</string>
+    <string name="settings_toast_permissions_refreshed">अनुमति की स्थिति रीफ़्रेश की गई।</string>
 
     <!-- Onboarding Screen -->
     <string name="screen_onboarding_title">S.E.N.T.I.N.E.L. में आपका स्वागत है</string>

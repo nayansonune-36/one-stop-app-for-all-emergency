@@ -122,9 +122,12 @@ fun SentinelNavHost(
         }
 
         composable(NavRoutes.SETTINGS) {
-            val settingsViewModel: SettingsViewModel = viewModel()
+            val settingsViewModel: SettingsViewModel = viewModel(
+                factory = SettingsViewModel.provideFactory(context)
+            )
             SettingsScreen(
                 viewModel = settingsViewModel,
+                onNavigateToMedical = { navController.navigate(NavRoutes.MEDICAL) },
                 onNavigateBack = { navController.popBackStack() }
             )
         }

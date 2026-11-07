@@ -179,10 +179,49 @@
 
     <!-- Settings Screen -->
     <string name="screen_settings_title">Settings</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_subtitle">Device preferences</string>
+    <string name="settings_profile_subtitle">Emergency profile on this device</string>
+    <string name="settings_section_general">General</string>
     <string name="settings_language_label">Language / भाषा</string>
     <string name="settings_language_desc">Select display language (changes take effect immediately)</string>
+    <string name="settings_language_title">Language</string>
+    <string name="settings_language_desc_short">App display language</string>
     <string name="lang_english">English</string>
     <string name="lang_hindi">हिन्दी (Hindi)</string>
+    <string name="settings_notifications_title">Safety notifications</string>
+    <string name="settings_notifications_desc">Local preparedness reminders</string>
+    <string name="settings_section_security">Security &amp; Medical ID</string>
+    <string name="settings_lock_title">Lock Medical ID</string>
+    <string name="settings_lock_desc">Require unlock before editing</string>
+    <string name="settings_pin_title">Change PIN</string>
+    <string name="settings_pin_set">PIN is set</string>
+    <string name="settings_pin_not_set">No PIN set</string>
+    <string name="settings_section_permissions">Permissions</string>
+    <string name="settings_perm_location_title">Location access</string>
+    <string name="settings_perm_location_desc">Location access is needed to show your position and nearby shelters.</string>
+    <string name="settings_perm_camera_title">Camera access</string>
+    <string name="settings_perm_camera_desc">Camera access is needed to scan a Medical ID QR code.</string>
+    <string name="settings_perm_mic_title">Microphone access</string>
+    <string name="settings_perm_mic_desc">Microphone access allows voice questions in the First Aid Bot.</string>
+    <string name="settings_perm_notif_title">Notifications access</string>
+    <string name="settings_perm_notif_desc">Notifications can show emergency and safety alerts.</string>
+    <string name="settings_perm_bluetooth_title">Bluetooth access</string>
+    <string name="settings_perm_bluetooth_desc">Bluetooth can connect to nearby SOS relays when supported.</string>
+    <string name="settings_perm_manage">Manage</string>
+    <string name="settings_perm_settings">Open device settings</string>
+    <string name="settings_section_info">Information</string>
+    <string name="settings_about_title">About</string>
+    <string name="settings_privacy_title">Privacy</string>
+    <string name="settings_privacy_desc">Local data and permissions</string>
+    <string name="settings_disclaimer_title">Safety disclaimer</string>
+    <string name="settings_disclaimer_desc">Important limitations</string>
+    <string name="settings_pin_dialog_title">Four-digit PIN</string>
+    <string name="settings_pin_dialog_desc">This PIN is stored on this device. Do not use a PIN you use elsewhere.</string>
+    <string name="settings_pin_save">Save PIN</string>
+    <string name="settings_toast_language_saved">Language preference saved.</string>
+    <string name="settings_toast_pin_saved">PIN saved on this device.</string>
+    <string name="settings_toast_permissions_refreshed">Permission status refreshed.</string>
 
     <!-- Onboarding Screen -->
     <string name="screen_onboarding_title">Welcome to S.E.N.T.I.N.E.L.</string>
