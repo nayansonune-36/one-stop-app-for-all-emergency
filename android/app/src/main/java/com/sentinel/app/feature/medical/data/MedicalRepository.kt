@@ -8,11 +8,28 @@ import com.sentinel.app.feature.medical.model.MedicalProfile
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
-class MedicalRepository(context: Context) : MedicalSummaryProvider {
+/**
+ * Local encrypted repository for emergency Medical ID data.
+ * All sensitive medical data is encrypted with AES-GCM via Android Keystore
+ * and never transmitted to the network.
+ * Implements MedicalSummaryProvider for attaching vital medical info to emergency SOS.
+ */
+class MedicalRepository(
+    context: Context,
+    private val cryptoManager: CryptoManager = CryptoManager()
+) : MedicalSummaryProvider {
 
     private val prefs: SharedPreferences =
         context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    private val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+        encodeDefaults = true
+    }
 
     private val _profile = MutableStateFlow(loadProfile())
     val profile: StateFlow<MedicalProfile> = _profile.asStateFlow()
@@ -21,33 +38,63 @@ class MedicalRepository(context: Context) : MedicalSummaryProvider {
     val isLocked: StateFlow<Boolean> = _isLocked.asStateFlow()
 
     private fun loadProfile(): MedicalProfile {
-        return MedicalProfile(
-            name = prefs.getString(KEY_NAME, "") ?: "",
-            age = prefs.getString(KEY_AGE, "") ?: "",
-            blood = prefs.getString(KEY_BLOOD, "") ?: "",
-            allergies = prefs.getString(KEY_ALLERGIES, "") ?: "",
-            conditions = prefs.getString(KEY_CONDITIONS, "") ?: "",
-            medications = prefs.getString(KEY_MEDICATIONS, "") ?: "",
-            contactName = prefs.getString(KEY_CONTACT_NAME, "") ?: "",
-            contactPhone = prefs.getString(KEY_CONTACT_PHONE, "") ?: "",
-            notes = prefs.getString(KEY_NOTES, "") ?: ""
-        )
+        // 1. Check for encrypted JSON payload
+        val encryptedData = prefs.getString(KEY_ENCRYPTED_PROFILE, null)
+        if (!encryptedData.isNullOrBlank()) {
+            val decryptedJson = cryptoManager.decrypt(encryptedData)
+            if (!decryptedJson.isNullOrBlank()) {
+                try {
+                    return json.decodeFromString<MedicalProfile>(decryptedJson)
+                } catch (_: Exception) {
+                    // JSON parsing failed, fallback below
+                }
+            }
+        }
+
+        // 2. Migration check: if unencrypted legacy fields exist, migrate them to encrypted payload
+        val legacyName = prefs.getString("med_name", null)
+        if (legacyName != null) {
+            val migrated = MedicalProfile(
+                name = prefs.getString("med_name", "") ?: "",
+                age = prefs.getString("med_age", "") ?: "",
+                bloodGroup = prefs.getString("med_blood", "") ?: "",
+                allergies = prefs.getString("med_allergies", "") ?: "",
+                conditions = prefs.getString("med_conditions", "") ?: "",
+                medications = prefs.getString("med_medications", "") ?: "",
+                emergencyContactName = prefs.getString("med_contact_name", "") ?: "",
+                emergencyContactPhone = prefs.getString("med_contact_phone", "") ?: ""
+            )
+            // Persist migrated encrypted profile and clean up plain text keys
+            saveProfile(migrated)
+            prefs.edit()
+                .remove("med_name")
+                .remove("med_age")
+                .remove("med_blood")
+                .remove("med_allergies")
+                .remove("med_conditions")
+                .remove("med_medications")
+                .remove("med_contact_name")
+                .remove("med_contact_phone")
+                .remove("med_notes")
+                .apply()
+            return migrated
+        }
+
+        return MedicalProfile()
     }
 
     fun getProfile(): MedicalProfile = _profile.value
 
     fun saveProfile(profile: MedicalProfile) {
-        prefs.edit()
-            .putString(KEY_NAME, profile.name)
-            .putString(KEY_AGE, profile.age)
-            .putString(KEY_BLOOD, profile.blood)
-            .putString(KEY_ALLERGIES, profile.allergies)
-            .putString(KEY_CONDITIONS, profile.conditions)
-            .putString(KEY_MEDICATIONS, profile.medications)
-            .putString(KEY_CONTACT_NAME, profile.contactName)
-            .putString(KEY_CONTACT_PHONE, profile.contactPhone)
-            .putString(KEY_NOTES, profile.notes)
-            .apply()
+        try {
+            val jsonString = json.encodeToString(profile)
+            val encryptedBase64 = cryptoManager.encrypt(jsonString)
+            prefs.edit()
+                .putString(KEY_ENCRYPTED_PROFILE, encryptedBase64)
+                .apply()
+        } catch (_: Exception) {
+            // In case of keystore anomaly, do not store in plain text
+        }
         _profile.value = profile
     }
 
@@ -57,21 +104,34 @@ class MedicalRepository(context: Context) : MedicalSummaryProvider {
     }
 
     fun getPin(): String? {
-        return prefs.getString(KEY_PIN, null)
+        val encryptedPin = prefs.getString(KEY_ENCRYPTED_PIN, null) ?: return null
+        return cryptoManager.decrypt(encryptedPin)
     }
 
     fun setPin(pin: String?) {
-        prefs.edit().putString(KEY_PIN, pin).apply()
+        if (pin.isNullOrBlank()) {
+            prefs.edit().remove(KEY_ENCRYPTED_PIN).remove(KEY_PIN_LEGACY).apply()
+        } else {
+            val encrypted = cryptoManager.encrypt(pin)
+            prefs.edit()
+                .putString(KEY_ENCRYPTED_PIN, encrypted)
+                .remove(KEY_PIN_LEGACY)
+                .apply()
+        }
     }
 
     override fun getMedicalSummary(): MedicalSummary? {
         val p = _profile.value
-        if (p.name.isBlank() && p.blood.isBlank() && p.allergies.isBlank() && p.conditions.isBlank() && p.contactPhone.isBlank()) {
+        if (p.name.isBlank() && p.bloodGroup.isBlank() && p.allergies.isBlank() &&
+            p.conditions.isBlank() && p.emergencyContactPhone.isBlank()
+        ) {
             return null
         }
-        val contact = listOf(p.contactName, p.contactPhone).filter { it.isNotBlank() }.joinToString(": ")
+        val contact = listOf(p.emergencyContactName, p.emergencyContactPhone)
+            .filter { it.isNotBlank() }
+            .joinToString(": ")
         return MedicalSummary(
-            bloodGroup = p.blood.takeIf { it.isNotBlank() },
+            bloodGroup = p.bloodGroup.takeIf { it.isNotBlank() },
             allergies = p.allergies.takeIf { it.isNotBlank() },
             conditions = p.conditions.takeIf { it.isNotBlank() },
             contact = contact.takeIf { it.isNotBlank() }
@@ -79,17 +139,10 @@ class MedicalRepository(context: Context) : MedicalSummaryProvider {
     }
 
     companion object {
-        private const val PREFS_NAME = "sentinel_medical_prefs"
-        private const val KEY_NAME = "med_name"
-        private const val KEY_AGE = "med_age"
-        private const val KEY_BLOOD = "med_blood"
-        private const val KEY_ALLERGIES = "med_allergies"
-        private const val KEY_CONDITIONS = "med_conditions"
-        private const val KEY_MEDICATIONS = "med_medications"
-        private const val KEY_CONTACT_NAME = "med_contact_name"
-        private const val KEY_CONTACT_PHONE = "med_contact_phone"
-        private const val KEY_NOTES = "med_notes"
+        private const val PREFS_NAME = "sentinel_medical_encrypted_prefs"
+        private const val KEY_ENCRYPTED_PROFILE = "enc_medical_profile"
+        private const val KEY_ENCRYPTED_PIN = "enc_medical_pin"
+        private const val KEY_PIN_LEGACY = "med_pin"
         private const val KEY_LOCKED = "med_locked"
-        private const val KEY_PIN = "med_pin"
     }
 }
