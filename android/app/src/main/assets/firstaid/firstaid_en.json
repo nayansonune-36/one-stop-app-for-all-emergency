@@ -1,142 +1,172 @@
 [
   {
     "id": "cpr",
-    "title": "CPR",
-    "subtitle": "Cardiac emergency",
+    "title": "CPR (Cardiopulmonary Resuscitation)",
+    "summary": "Immediate emergency resuscitation for cardiac arrest and unresponsive victims.",
+    "subtitle": "Cardiac arrest emergency",
     "icon": "heart",
-    "warning": "Use an Automated External Defibrillator (AED) as soon as one is available.",
     "steps": [
-      "Check for responsiveness and normal breathing.",
-      "Call emergency services (112 or 108) or ask someone nearby to do so immediately.",
-      "Place heel of one hand in center of chest, other hand on top with interlocking fingers.",
-      "Deliver hard, fast compressions at a rate of 100–120 per minute at 5–6 cm depth.",
-      "Continue chest compressions continuously until emergency responders take over or AED prompts."
-    ]
+      "Check responsiveness by tapping the shoulders firmly and shouting loudly.",
+      "Call emergency services (112 or 108) immediately and ask for an AED.",
+      "Check for normal breathing or chest rise for no more than 10 seconds.",
+      "Place heel of one hand in center of chest, other hand on top with interlocked fingers.",
+      "Push hard and fast at 100–120 compressions per minute at 5–6 cm depth.",
+      "Do not interrupt compressions until emergency medical help takes over or AED arrives."
+    ],
+    "whenToCall": "Call 112 or 108 immediately if the person is unresponsive, unconscious, or not breathing normally.",
+    "disclaimer": "Not a substitute for professional medical care. In an emergency, always call 112 or 108 immediately."
   },
   {
     "id": "choking",
-    "title": "Choking",
-    "subtitle": "Blocked airway",
+    "title": "Choking (Adult & Child)",
+    "summary": "Emergency airway clearance for a conscious choking person unable to breathe.",
+    "subtitle": "Blocked airway emergency",
     "icon": "activity",
-    "warning": "If the person becomes unresponsive, lower them to the ground and begin chest compressions (CPR).",
     "steps": [
-      "Ask 'Are you choking?' and check if the person can speak, cough, or breathe.",
-      "Lean the person slightly forward and deliver 5 firm back blows between shoulder blades with heel of hand.",
-      "If airway remains blocked, give 5 quick upward abdominal thrusts (Heimlich maneuver) just above navel.",
-      "Alternate between 5 back blows and 5 abdominal thrusts until object is expelled.",
-      "For infants under 1 year, alternate 5 back slaps with 2-finger chest thrusts only."
-    ]
+      "Ask 'Are you choking?' and encourage coughing if they are able to cough or speak.",
+      "If unable to cough or breathe, lean them forward supporting their chest.",
+      "Deliver 5 firm back blows between shoulder blades using the heel of your hand.",
+      "If airway remains blocked, give 5 quick upward abdominal thrusts (Heimlich maneuver).",
+      "For infants under 1 year, alternate 5 back slaps with 2-finger chest thrusts only.",
+      "If the victim becomes unresponsive, lower to the ground and start CPR immediately."
+    ],
+    "whenToCall": "Call 112 or 108 immediately if the obstruction does not clear within two cycles, or if the person becomes unresponsive.",
+    "disclaimer": "Not a substitute for professional medical care. In an emergency, always call 112 or 108 immediately."
   },
   {
     "id": "bleeding",
     "title": "Severe Bleeding",
-    "subtitle": "Severe wound care",
+    "summary": "Rapid hemorrhage control to prevent life-threatening shock.",
+    "subtitle": "Severe wound hemorrhage",
     "icon": "droplets",
-    "warning": "Do not remove embedded objects or peel off soaked initial dressings.",
     "steps": [
       "Protect yourself with clean gloves or a waterproof barrier if available.",
       "Apply firm, continuous direct pressure with sterile gauze or clean cloth directly over wound.",
-      "Keep pressure constant for at least 5 minutes; layer additional pads if blood soaks through.",
+      "Keep pressure constant for at least 5 minutes without lifting the cloth to check.",
+      "If blood soaks through, add additional pads on top without removing original dressing.",
       "Elevate the injured limb above heart level only if no broken bones are suspected.",
-      "If severe bleeding continues on a limb, apply a commercial tourniquet 5–7 cm above the wound."
-    ]
+      "If limb bleeding is uncontrollable, apply a commercial tourniquet 5–7 cm above the wound."
+    ],
+    "whenToCall": "Call 112 or 108 immediately if bleeding spurts, will not stop after 5 minutes of direct pressure, or signs of shock appear.",
+    "disclaimer": "Not a substitute for professional medical care. In an emergency, always call 112 or 108 immediately."
   },
   {
     "id": "burns",
-    "title": "Burns",
-    "subtitle": "Heat or chemical injury",
+    "title": "Burns (Thermal & Chemical)",
+    "summary": "Immediate cooling and protective care for thermal, chemical, or electrical burn injuries.",
+    "subtitle": "Heat or chemical burn",
     "icon": "flame",
-    "warning": "Never apply ice, butter, oils, toothpaste, or adhesive dressings to burns.",
     "steps": [
-      "Ensure personal safety, remove heat source, and gently take off hot non-adherent clothing.",
+      "Ensure personal scene safety and safely remove the heat source or chemical exposure.",
       "Cool the burn under clean, cool running water for at least 20 minutes.",
-      "Carefully remove rings, watches, or restrictive clothing before swelling develops.",
-      "Loosely cover burned skin with sterile non-stick dressing or clean plastic wrap.",
-      "Seek emergency hospital treatment immediately for deep, chemical, electrical, or extensive burns."
-    ]
+      "Gently remove rings, watches, and restrictive clothing before swelling develops.",
+      "Do NOT apply ice, butter, oils, toothpaste, or adhesive bandages to burned skin.",
+      "Loosely cover burned skin with a sterile non-stick dressing or clean plastic wrap.",
+      "Keep the person warm to prevent hypothermia during prolonged cooling."
+    ],
+    "whenToCall": "Call 112 or 108 immediately for burns larger than the palm, burns on face/airway/joints, electrical burns, or chemical exposure.",
+    "disclaimer": "Not a substitute for professional medical care. In an emergency, always call 112 or 108 immediately."
   },
   {
-    "id": "fractures",
-    "title": "Fractures & Sprains",
+    "id": "fracture",
+    "title": "Fracture & Sprains",
+    "summary": "Safe immobilization and trauma management for suspected bone or joint fractures.",
     "subtitle": "Bone and joint injury",
     "icon": "zap",
-    "warning": "Never attempt to straighten a deformed limb or push an exposed bone back in.",
     "steps": [
-      "Instruct the injured person to remain completely still and support the injured limb in place.",
-      "Control any open bleeding with gentle pressure around the wound, avoiding bone pressure.",
-      "Apply an ice pack wrapped in a cloth for 15–20 minutes at a time to reduce swelling.",
-      "Splint the joint above and below the fracture only if transport is unavoidable and you are trained.",
-      "Check frequently for pulse, warmth, and sensation beyond the injured area."
-    ]
-  },
-  {
-    "id": "seizures",
-    "title": "Seizures",
-    "subtitle": "Protect and monitor",
-    "icon": "shield_alert",
-    "warning": "Do not restrain the person, and never place fingers, spoons, or objects into their mouth.",
-    "steps": [
-      "Guide the person safely away from hard edges, traffic, water, and sharp objects.",
-      "Place a folded jacket or soft cushion under their head to protect from impact trauma.",
-      "Note the start time of the seizure and gently loosen tight collars, ties, or neckwear.",
-      "Once active convulsions cease, roll the person onto their side into recovery position to clear airway.",
-      "Stay calmly beside them until fully alert; call 112 if seizure lasts over 5 minutes or repeats."
-    ]
-  },
-  {
-    "id": "heatstroke",
-    "title": "Heatstroke",
-    "subtitle": "Dangerous overheating",
-    "icon": "sun",
-    "warning": "Heatstroke is a medical emergency. Rapid whole-body cooling takes priority.",
-    "steps": [
-      "Move the patient immediately into dense shade or an air-conditioned room/vehicle.",
-      "Remove heavy outer clothing to expose as much skin as possible.",
-      "Immerse in cold water, or spray continuous cool water while actively fanning their skin.",
-      "Apply ice packs or cold wet towels to armpits, groin, neck, and back.",
-      "Never force fluids if patient is confused, drowsy, or unconscious."
-    ]
+      "Instruct the injured person to remain completely still and avoid moving the injured area.",
+      "Support the injured limb in the exact position found without attempting realignment.",
+      "Never attempt to straighten a deformed limb or push an exposed bone back into flesh.",
+      "Control any open wound bleeding with gentle pressure around the wound, avoiding the bone.",
+      "Apply an ice pack wrapped in a cloth for 15 minutes at a time to reduce swelling.",
+      "Immobilize with a splint only if transport is unavoidable and you are properly trained."
+    ],
+    "whenToCall": "Call 112 or 108 immediately if bone pierces the skin, limb is cold or blue, or head, neck, or spine injury is suspected.",
+    "disclaimer": "Not a substitute for professional medical care. In an emergency, always call 112 or 108 immediately."
   },
   {
     "id": "snakebite",
     "title": "Snake Bite",
-    "subtitle": "Venomous puncture injury",
+    "summary": "Crucial immobilization protocol for venomous snake puncture injuries.",
+    "subtitle": "Venomous puncture wound",
     "icon": "shield_alert",
-    "warning": "Do NOT cut the wound, suck out venom, apply ice, or tie a tight arterial tourniquet.",
     "steps": [
-      "Keep the patient calm and completely still; physical movement accelerates venom circulation.",
-      "Remove rings, bangles, anklets, and shoes before rapid limb swelling occurs.",
+      "Keep the patient calm, lying down, and completely still to slow venom circulation.",
+      "Remove rings, bangles, watches, and shoes immediately before rapid limb swelling occurs.",
       "Immobilize the bitten limb at or slightly below heart level with a splint.",
-      "Apply a firm crepe bandage starting from fingers/toes up the limb if trained in pressure immobilization.",
-      "Transport immediately to the nearest hospital with Anti-Snake Venom (ASV) availability."
-    ]
+      "Apply a firm crepe pressure bandage from extremities toward torso if trained.",
+      "Do NOT cut the wound, suck out venom, apply ice, or tie a tight arterial tourniquet.",
+      "Note the snake's color and markings safely, and transport immediately to hospital."
+    ],
+    "whenToCall": "Call 112 or 108 immediately for any venomous snake bite or puncture wound with swelling, pain, or dizziness.",
+    "disclaimer": "Not a substitute for professional medical care. In an emergency, always call 112 or 108 immediately."
   },
   {
-    "id": "hypothermia",
-    "title": "Shock & Hypothermia",
-    "subtitle": "Low perfusion & extreme cold",
+    "id": "drowning",
+    "title": "Drowning & Flood Rescue",
+    "summary": "Safe water extrication and emergency resuscitation for submersion victims.",
+    "subtitle": "Water submersion emergency",
     "icon": "droplets",
-    "warning": "Do not apply direct intense heat (radiators, hot water) which can cause cardiovascular collapse.",
     "steps": [
-      "Lay the person flat and elevate their legs 20–30 cm unless head, neck, or spinal injury is suspected.",
-      "Remove damp, cold clothing gently and replace with warm, dry blankets or emergency thermal foil.",
-      "Insulate the patient from cold ground using a sleeping mat, coats, or tarp underneath.",
-      "Cover their head and neck while keeping face exposed to preserve core body heat.",
-      "Offer warm sweet non-caffeinated drinks only if the patient is fully conscious and swallowing easily."
-    ]
+      "Ensure rescuer safety first; reach or throw a floating object, do not enter dangerous water.",
+      "Remove victim from water safely while supporting their head and neck.",
+      "Check responsiveness and normal breathing immediately once on dry ground.",
+      "If not breathing, deliver 5 initial rescue breaths followed by 30 chest compressions (CPR).",
+      "Continue cycles of 30 chest compressions and 2 rescue breaths until help takes over.",
+      "If breathing normally, place in recovery position on their side and keep warm."
+    ],
+    "whenToCall": "Call 112 or 108 immediately for any submersion incident, even if the person appears to recover quickly.",
+    "disclaimer": "Not a substitute for professional medical care. In an emergency, always call 112 or 108 immediately."
+  },
+  {
+    "id": "heatstroke",
+    "title": "Heat Stroke",
+    "summary": "Emergency rapid whole-body cooling for life-threatening hyperthermia.",
+    "subtitle": "Dangerous core overheating",
+    "icon": "sun",
+    "steps": [
+      "Move the person immediately into dense shade or an air-conditioned room or vehicle.",
+      "Remove heavy outer clothing to expose as much skin surface as possible.",
+      "Rapidly cool the person by spraying cool water while actively fanning their skin.",
+      "Apply cold wet cloths or ice packs to the neck, armpits, and groin.",
+      "Do NOT force fluids if the person is confused, drowsy, vomiting, or unconscious.",
+      "Monitor breathing and consciousness closely until emergency medical teams arrive."
+    ],
+    "whenToCall": "Call 112 or 108 immediately. Heat stroke (temperature over 40°C, confusion, rapid pulse) is an extreme medical emergency.",
+    "disclaimer": "Not a substitute for professional medical care. In an emergency, always call 112 or 108 immediately."
+  },
+  {
+    "id": "fainting",
+    "title": "Fainting (Syncope)",
+    "summary": "Emergency management for temporary loss of consciousness due to reduced brain blood flow.",
+    "subtitle": "Temporary loss of consciousness",
+    "icon": "activity",
+    "steps": [
+      "Lay the person flat on their back on the ground immediately.",
+      "Elevate their feet and legs 20–30 cm above heart level to restore blood flow to brain.",
+      "Loosen tight collars, ties, belts, or restrictive clothing around the neck.",
+      "Ensure fresh airflow by opening windows and asking onlookers to step back.",
+      "If they do not regain consciousness within 1 minute, roll into recovery position and check breathing.",
+      "Do not allow them to stand up quickly once awake; have them rest lying down for 10 minutes."
+    ],
+    "whenToCall": "Call 112 or 108 immediately if the person remains unconscious for over 1 minute, has chest pain, or fell and struck their head.",
+    "disclaimer": "Not a substitute for professional medical care. In an emergency, always call 112 or 108 immediately."
   },
   {
     "id": "poisoning",
     "title": "Poisoning & Ingestion",
-    "subtitle": "Toxic substance exposure",
-    "icon": "activity",
-    "warning": "Do not induce vomiting unless specifically instructed by a medical toxicologist.",
+    "summary": "Immediate toxicity response for ingested chemicals, pesticides, or toxic substances.",
+    "subtitle": "Toxic chemical exposure",
+    "icon": "shield_alert",
     "steps": [
-      "Identify the toxic chemical, plant, pesticide, or medication container if safe to do so.",
-      "If the substance is on skin or eyes, irrigate copiously with clean running water for 15–20 minutes.",
-      "If toxic gas or fumes were inhaled, bring victim into fresh open air immediately.",
-      "Place an unconscious breathing victim into the lateral recovery position.",
-      "Call National Poison Information Centre (1800-116-117) or 112 immediately with product details."
-    ]
+      "Ensure personal safety and remove the victim from toxic fumes or chemical contact area.",
+      "Safely identify the toxic container, chemical label, plant, or medication involved.",
+      "Do NOT induce vomiting unless specifically instructed by poison control or emergency doctors.",
+      "If the substance is on skin or in eyes, flush continuously with clean water for 15 minutes.",
+      "If unconscious but breathing normally, place in the recovery position on their side.",
+      "Bring the chemical container or substance sample with the patient to the hospital."
+    ],
+    "whenToCall": "Call 112 or 108 immediately, or call the National Poison Information Centre (1800-116-117) with the product details.",
+    "disclaimer": "Not a substitute for professional medical care. In an emergency, always call 112 or 108 immediately."
   }
 ]

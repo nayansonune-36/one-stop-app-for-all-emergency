@@ -3,7 +3,6 @@ package com.sentinel.app.feature.firstaid
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,23 +22,20 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Healing
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.WaterDrop
-import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material.icons.filled.WbSunny
-import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -99,6 +95,7 @@ fun FirstAidScreen(
     } else {
         GuideListView(
             uiState = uiState,
+            onNavigateBack = onNavigateBack,
             onSearchChanged = { viewModel.onSearchQueryChanged(it) },
             onClearSearch = { viewModel.onClearSearch() },
             onSelectGuide = { viewModel.onSelectGuide(it) },
@@ -110,6 +107,7 @@ fun FirstAidScreen(
 @Composable
 private fun GuideListView(
     uiState: FirstAidUiState,
+    onNavigateBack: () -> Unit,
     onSearchChanged: (String) -> Unit,
     onClearSearch: () -> Unit,
     onSelectGuide: (FirstAidGuide) -> Unit,
@@ -122,24 +120,36 @@ private fun GuideListView(
             .padding(horizontal = spacing.medium, vertical = spacing.medium)
     ) {
         // Header
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = stringResource(R.string.firstaid_offline_eyebrow).uppercase(),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = stringResource(R.string.firstaid_title),
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                text = stringResource(R.string.firstaid_subtitle_format, uiState.totalCount),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onNavigateBack) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.btn_back),
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
+            Spacer(modifier = Modifier.width(spacing.small))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.firstaid_offline_eyebrow).uppercase(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(R.string.firstaid_title),
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    text = stringResource(R.string.firstaid_subtitle_format, uiState.totalCount),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(spacing.medium))
@@ -265,7 +275,7 @@ private fun GuideItemCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = guide.subtitle,
+                    text = guide.summary.ifBlank { guide.subtitle },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -304,7 +314,7 @@ private fun GuideDetailView(
         ) {
             IconButton(onClick = onBack) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = stringResource(R.string.firstaid_back_to_guides),
                     tint = MaterialTheme.colorScheme.onBackground
                 )
@@ -355,7 +365,7 @@ private fun GuideDetailView(
                 Spacer(modifier = Modifier.width(spacing.medium))
                 Column {
                     Text(
-                        text = guide.subtitle,
+                        text = guide.summary.ifBlank { guide.subtitle },
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -371,42 +381,57 @@ private fun GuideDetailView(
 
         Spacer(modifier = Modifier.height(spacing.small))
 
-        // Emergency Call Note Card
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = RedSoft,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(spacing.medium),
-                verticalAlignment = Alignment.CenterVertically
+        // When to Call 112 / 108 Card
+        if (guide.whenToCall.isNotBlank()) {
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = RedSoft,
+                border = androidx.compose.foundation.BorderStroke(1.dp, RedPrimary.copy(alpha = 0.3f)),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(
-                    imageVector = Icons.Default.Phone,
-                    contentDescription = null,
-                    tint = RedPrimary,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(spacing.medium))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.firstaid_call_emergency_note),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = RedPrimary
+                Row(
+                    modifier = Modifier.padding(spacing.medium),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Phone,
+                        contentDescription = null,
+                        tint = RedPrimary,
+                        modifier = Modifier.size(24.dp)
                     )
-                    Text(
-                        text = stringResource(R.string.firstaid_call_emergency_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Spacer(modifier = Modifier.width(spacing.medium))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.firstaid_when_to_call_title),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = RedPrimary
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = guide.whenToCall,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
+
+            Spacer(modifier = Modifier.height(spacing.medium))
         }
 
-        Spacer(modifier = Modifier.height(spacing.medium))
+        // Action Steps Title
+        Text(
+            text = stringResource(R.string.firstaid_steps_title),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
 
-        // Numbered Steps
+        Spacer(modifier = Modifier.height(spacing.small))
+
+        // Numbered Steps with large readable text
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(spacing.small)
@@ -418,7 +443,7 @@ private fun GuideDetailView(
 
         Spacer(modifier = Modifier.height(spacing.medium))
 
-        // Important Warning Card
+        // "Not a substitute for professional care" Disclaimer Banner
         Surface(
             shape = RoundedCornerShape(16.dp),
             color = DarkAmberBg,
@@ -427,33 +452,44 @@ private fun GuideDetailView(
         ) {
             Row(
                 modifier = Modifier.padding(spacing.medium),
-                verticalAlignment = Alignment.Top
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.Warning,
+                    imageVector = Icons.Default.Info,
                     contentDescription = null,
                     tint = DarkAmber,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(22.dp)
                 )
                 Spacer(modifier = Modifier.width(spacing.medium))
-                Column {
-                    Text(
-                        text = stringResource(R.string.firstaid_important_warning),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = DarkAmber
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = guide.warning,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
+                Text(
+                    text = if (guide.disclaimer.isNotBlank()) guide.disclaimer else stringResource(R.string.firstaid_not_substitute),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(spacing.large))
+        Spacer(modifier = Modifier.height(spacing.medium))
+
+        // Emergency Call 112 / 108 Button
+        Button(
+            onClick = onCallEmergency,
+            colors = ButtonDefaults.buttonColors(containerColor = RedPrimary),
+            shape = ButtonShape,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp)
+        ) {
+            Icon(Icons.Default.Phone, contentDescription = null, modifier = Modifier.size(20.dp))
+            Spacer(modifier = Modifier.width(spacing.small))
+            Text(
+                text = stringResource(R.string.firstaid_call_emergency_note),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(modifier = Modifier.height(spacing.small))
 
         // Back button
         OutlinedButton(
@@ -464,7 +500,7 @@ private fun GuideDetailView(
                 .height(52.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.ArrowBack,
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)
             )
@@ -493,22 +529,23 @@ private fun StepCard(stepNumber: Int, stepText: String) {
         ) {
             Box(
                 modifier = Modifier
-                    .size(28.dp)
+                    .size(32.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = stepNumber.toString(),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.ExtraBold,
                     color = Color.White
                 )
             }
             Spacer(modifier = Modifier.width(spacing.medium))
             Text(
                 text = stepText,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, lineHeight = 22.sp),
+                fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )

@@ -72,6 +72,7 @@ class FirstAidViewModel(
         val lower = query.trim().lowercase(Locale.ROOT)
         return list.filter {
             it.title.lowercase(Locale.ROOT).contains(lower) ||
+                    it.summary.lowercase(Locale.ROOT).contains(lower) ||
                     it.subtitle.lowercase(Locale.ROOT).contains(lower) ||
                     it.steps.any { step -> step.lowercase(Locale.ROOT).contains(lower) }
         }

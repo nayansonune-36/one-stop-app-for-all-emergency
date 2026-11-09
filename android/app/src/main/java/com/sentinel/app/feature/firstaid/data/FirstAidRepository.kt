@@ -12,13 +12,23 @@ class FirstAidRepository(private val context: Context) {
     }
 
     fun loadGuides(isHindi: Boolean): List<FirstAidGuide> {
-        val fileName = if (isHindi) "firstaid/firstaid_hi.json" else "firstaid/firstaid_en.json"
-        return try {
-            val content = context.assets.open(fileName).bufferedReader().use { it.readText() }
-            json.decodeFromString<List<FirstAidGuide>>(content)
-        } catch (e: Exception) {
-            Log.e("FirstAidRepository", "Error reading $fileName: ${e.message}")
-            emptyList()
+        val candidates = if (isHindi) {
+            listOf("firstaid/firstaid_hi.json", "content/firstaid_hi.json", "firstaid_hi.json")
+        } else {
+            listOf("firstaid/firstaid_en.json", "content/firstaid_en.json", "firstaid_en.json")
         }
+
+        for (fileName in candidates) {
+            try {
+                val content = context.assets.open(fileName).bufferedReader().use { it.readText() }
+                val guides = json.decodeFromString<List<FirstAidGuide>>(content)
+                if (guides.isNotEmpty()) return guides
+            } catch (_: Exception) {
+                // Try next candidate
+            }
+        }
+
+        Log.e("FirstAidRepository", "Failed to load guides for isHindi=$isHindi")
+        return emptyList()
     }
 }
