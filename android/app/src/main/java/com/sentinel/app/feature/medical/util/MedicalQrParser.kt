@@ -1,33 +1,55 @@
 package com.sentinel.app.feature.medical.util
 
 import com.sentinel.app.feature.medical.model.MedicalProfile
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
 
+/**
+ * Compact offline QR serializer and parser for MedicalProfile.
+ * Generates an ultra-compact versioned JSON payload designed for rapid,
+ * error-resilient scanning even under low-light or degraded camera conditions.
+ */
 object MedicalQrParser {
+
+    const val CURRENT_VERSION = 1
+
     private val json = Json {
         ignoreUnknownKeys = true
         isLenient = true
-        encodeDefaults = true
     }
 
     /**
-     * Serializes MedicalProfile to the exact flat JSON format expected by SENTINEL QR scanners:
-     * {"name":"...","age":"...","blood":"...","allergies":"...","conditions":"...","medications":"...","contactName":"...","contactPhone":"...","notes":"..."}
+     * Serializes MedicalProfile to a compact, versioned JSON payload:
+     * {"v":1,"n":"Name","a":"Age","bg":"O+","al":"...","co":"...","me":"...","en":"...","ep":"..."}
+     * Omits empty fields to keep QR module density minimal.
      */
     fun serialize(profile: MedicalProfile): String {
-        return json.encodeToString(profile)
+        val root = buildJsonObject {
+            put("v", CURRENT_VERSION)
+            if (profile.name.isNotBlank()) put("n", profile.name.trim())
+            if (profile.age.isNotBlank()) put("a", profile.age.trim())
+            if (profile.bloodGroup.isNotBlank()) put("bg", profile.bloodGroup.trim())
+            if (profile.allergies.isNotBlank()) put("al", profile.allergies.trim())
+            if (profile.conditions.isNotBlank()) put("co", profile.conditions.trim())
+            if (profile.medications.isNotBlank()) put("me", profile.medications.trim())
+            if (profile.emergencyContactName.isNotBlank()) put("en", profile.emergencyContactName.trim())
+            if (profile.emergencyContactPhone.isNotBlank()) put("ep", profile.emergencyContactPhone.trim())
+        }
+        return root.toString()
     }
 
     /**
-     * Parses a QR code string. Supports both flat keys and wrapped {"medicalId": {...}} structure.
+     * Parses a QR code string.
+     * Supports both ultra-compact keys (v, n, a, bg, al, co, me, en, ep)
+     * and full verbose keys (version, name, age, bloodGroup, allergies, conditions, etc.).
      * Returns null if no valid medical fields are present.
      */
     fun parse(raw: String): MedicalProfile? {
         return try {
-            val element = json.parseToJsonElement(raw)
+            val element = json.parseToJsonElement(raw.trim())
             val root = element.jsonObject
             val target = if (root.containsKey("medicalId")) {
                 root["medicalId"]?.jsonObject ?: root
@@ -35,31 +57,39 @@ object MedicalQrParser {
                 root
             }
 
-            val name = target["name"]?.jsonPrimitive?.content ?: ""
-            val age = target["age"]?.jsonPrimitive?.content ?: ""
-            val blood = target["blood"]?.jsonPrimitive?.content ?: ""
-            val allergies = target["allergies"]?.jsonPrimitive?.content ?: ""
-            val conditions = target["conditions"]?.jsonPrimitive?.content ?: ""
-            val medications = target["medications"]?.jsonPrimitive?.content ?: ""
-            val contactName = target["contactName"]?.jsonPrimitive?.content ?: ""
-            val contactPhone = target["contactPhone"]?.jsonPrimitive?.content ?: ""
-            val notes = target["notes"]?.jsonPrimitive?.content ?: ""
+            fun extract(vararg keys: String): String {
+                for (key in keys) {
+                    val value = target[key]?.jsonPrimitive?.content
+                    if (!value.isNullOrBlank()) return value.trim()
+                }
+                return ""
+            }
+
+            val name = extract("n", "name")
+            val age = extract("a", "age")
+            val bloodGroup = extract("bg", "bloodGroup", "blood")
+            val allergies = extract("al", "allergies")
+            val conditions = extract("co", "conditions")
+            val medications = extract("me", "medications")
+            val emergencyContactName = extract("en", "emergencyContactName", "contactName")
+            val emergencyContactPhone = extract("ep", "emergencyContactPhone", "contactPhone")
 
             // Check if at least one meaningful field has non-blank data
-            val hasContent = listOf(name, age, blood, allergies, conditions, medications, contactName, contactPhone, notes)
-                .any { it.isNotBlank() }
+            val hasContent = listOf(
+                name, age, bloodGroup, allergies, conditions, medications,
+                emergencyContactName, emergencyContactPhone
+            ).any { it.isNotBlank() }
 
             if (hasContent) {
                 MedicalProfile(
-                    name = name.trim(),
-                    age = age.trim(),
-                    blood = blood.trim(),
-                    allergies = allergies.trim(),
-                    conditions = conditions.trim(),
-                    medications = medications.trim(),
-                    contactName = contactName.trim(),
-                    contactPhone = contactPhone.trim(),
-                    notes = notes.trim()
+                    name = name,
+                    age = age,
+                    bloodGroup = bloodGroup,
+                    allergies = allergies,
+                    conditions = conditions,
+                    medications = medications,
+                    emergencyContactName = emergencyContactName,
+                    emergencyContactPhone = emergencyContactPhone
                 )
             } else {
                 null
