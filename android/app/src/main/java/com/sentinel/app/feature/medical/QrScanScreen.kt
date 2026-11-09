@@ -4,8 +4,10 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.OptIn
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
@@ -32,7 +34,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FlashOff
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.Refresh
@@ -51,6 +52,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,11 +69,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import com.sentinel.app.R
 import com.sentinel.app.feature.medical.model.MedicalProfile
-import com.sentinel.app.feature.medical.util.MedicalQrParser
 import com.sentinel.app.ui.theme.DarkNavyBg
 import com.sentinel.app.ui.theme.DarkNavyCard
 import com.sentinel.app.ui.theme.DividerBorder
@@ -87,25 +89,27 @@ import java.util.concurrent.Executors
 fun QrScanScreen(
     onNavigateBack: () -> Unit,
     onProfileImported: (MedicalProfile) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: QrScanViewModel = viewModel(factory = QrScanViewModel.Factory)
 ) {
     val context = LocalContext.current
-    var hasCameraPermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-        )
-    }
+    val uiState by viewModel.uiState.collectAsState()
+
+    var cameraInstance by remember { mutableStateOf<Camera?>(null) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
-        hasCameraPermission = isGranted
+        viewModel.onPermissionResult(isGranted)
     }
 
-    var scannedProfile by remember { mutableStateOf<MedicalProfile?>(null) }
-    var scanError by remember { mutableStateOf<String?>(null) }
-    var torchEnabled by remember { mutableStateOf(false) }
-    var camera by remember { mutableStateOf<Camera?>(null) }
+    LaunchedEffect(Unit) {
+        val granted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+        viewModel.onPermissionResult(granted)
+    }
 
     Column(
         modifier = modifier
@@ -141,28 +145,27 @@ fun QrScanScreen(
                     )
                 }
 
-                if (hasCameraPermission && scannedProfile == null) {
+                if (uiState.hasCameraPermission && uiState.scannedProfile == null) {
                     IconButton(
                         onClick = {
-                            val nextTorch = !torchEnabled
-                            torchEnabled = nextTorch
-                            camera?.cameraControl?.enableTorch(nextTorch)
+                            val newTorch = viewModel.toggleTorch()
+                            cameraInstance?.cameraControl?.enableTorch(newTorch)
                         }
                     ) {
                         Icon(
-                            imageVector = if (torchEnabled) Icons.Default.FlashOff else Icons.Default.FlashOn,
+                            imageVector = if (uiState.isTorchOn) Icons.Default.FlashOff else Icons.Default.FlashOn,
                             contentDescription = stringResource(
-                                if (torchEnabled) R.string.qr_torch_off else R.string.qr_torch_on
+                                if (uiState.isTorchOn) R.string.qr_torch_off else R.string.qr_torch_on
                             ),
-                            tint = if (torchEnabled) Color(0xFFFACC15) else TextWhite
+                            tint = if (uiState.isTorchOn) Color(0xFFFACC15) else TextWhite
                         )
                     }
                 }
             }
         }
 
-        if (!hasCameraPermission) {
-            // Permission needed state
+        if (!uiState.hasCameraPermission) {
+            // Permission needed / denied state
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -198,7 +201,11 @@ fun QrScanScreen(
                 Spacer(modifier = Modifier.height(spacing.small))
 
                 Text(
-                    text = stringResource(R.string.qr_camera_permission_desc),
+                    text = if (uiState.permissionRequested) {
+                        stringResource(R.string.qr_camera_permission_denied_help)
+                    } else {
+                        stringResource(R.string.qr_camera_permission_desc)
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextMuted,
                     textAlign = TextAlign.Center
@@ -215,9 +222,9 @@ fun QrScanScreen(
                     Text(stringResource(R.string.qr_allow_camera))
                 }
             }
-        } else if (scannedProfile != null) {
-            // Review state for scanned profile
-            val profile = scannedProfile!!
+        } else if (uiState.scannedProfile != null) {
+            // Read-only view for scanned profile with clear "Scanned profile" banner
+            val profile = uiState.scannedProfile!!
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -230,10 +237,11 @@ fun QrScanScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(spacing.medium)) {
+                        // Prominent "Scanned Profile" Banner
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier = Modifier
-                                    .size(40.dp)
+                                    .size(44.dp)
                                     .clip(CircleShape)
                                     .background(GreenOnline.copy(alpha = 0.15f)),
                                 contentAlignment = Alignment.Center
@@ -242,19 +250,19 @@ fun QrScanScreen(
                                     imageVector = Icons.Default.Security,
                                     contentDescription = null,
                                     tint = GreenOnline,
-                                    modifier = Modifier.size(24.dp)
+                                    modifier = Modifier.size(26.dp)
                                 )
                             }
                             Spacer(modifier = Modifier.width(spacing.small))
                             Column {
                                 Text(
-                                    text = stringResource(R.string.qr_found_title),
+                                    text = stringResource(R.string.qr_scanned_profile_banner),
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = TextWhite,
+                                    color = GreenOnline,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = stringResource(R.string.qr_found_desc),
+                                    text = stringResource(R.string.qr_scanned_profile_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = TextMuted
                                 )
@@ -265,13 +273,12 @@ fun QrScanScreen(
 
                         ProfileDetailRow(stringResource(R.string.medical_field_name), profile.name)
                         ProfileDetailRow(stringResource(R.string.medical_field_age), profile.age)
-                        ProfileDetailRow(stringResource(R.string.medical_field_blood), profile.blood)
+                        ProfileDetailRow(stringResource(R.string.medical_field_blood), profile.bloodGroup)
                         ProfileDetailRow(stringResource(R.string.medical_field_allergies), profile.allergies)
                         ProfileDetailRow(stringResource(R.string.medical_field_conditions), profile.conditions)
                         ProfileDetailRow(stringResource(R.string.medical_field_medications), profile.medications)
-                        ProfileDetailRow(stringResource(R.string.medical_field_contact_name), profile.contactName)
-                        ProfileDetailRow(stringResource(R.string.medical_field_contact_phone), profile.contactPhone)
-                        ProfileDetailRow(stringResource(R.string.medical_field_notes), profile.notes)
+                        ProfileDetailRow(stringResource(R.string.medical_field_contact_name), profile.emergencyContactName)
+                        ProfileDetailRow(stringResource(R.string.medical_field_contact_phone), profile.emergencyContactPhone)
 
                         Spacer(modifier = Modifier.height(spacing.large))
 
@@ -288,10 +295,7 @@ fun QrScanScreen(
                         Spacer(modifier = Modifier.height(spacing.small))
 
                         OutlinedButton(
-                            onClick = {
-                                scannedProfile = null
-                                scanError = null
-                            },
+                            onClick = { viewModel.resetScan() },
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = TextWhite),
                             border = CardDefaults.outlinedCardBorder(),
                             modifier = Modifier.fillMaxWidth()
@@ -305,112 +309,71 @@ fun QrScanScreen(
             }
         } else {
             // Live CameraX Scanner
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
+            Box(modifier = Modifier.fillMaxSize()) {
                 CameraPreviewView(
-                    onBarcodeScanned = { rawValue ->
-                        val parsed = MedicalQrParser.parse(rawValue)
-                        if (parsed != null) {
-                            scannedProfile = parsed
-                            scanError = null
-                        } else {
-                            scanError = context.getString(R.string.qr_invalid_code)
-                        }
+                    isTorchOn = uiState.isTorchOn,
+                    onBarcodeScanned = { raw ->
+                        viewModel.onBarcodeRawDetected(raw)
                     },
                     onCameraReady = { cam ->
-                        camera = cam
-                    }
+                        cameraInstance = cam
+                    },
+                    modifier = Modifier.fillMaxSize()
                 )
 
-                // Viewfinder Frame Overlay
-                Box(
+                // Viewfinder frame and guide overlay
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center
+                        .padding(spacing.large),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
                     Box(
                         modifier = Modifier
                             .size(260.dp)
                             .border(2.dp, RedPrimary, RoundedCornerShape(16.dp))
+                            .background(Color.Transparent)
                     )
-                }
 
-                // Top Hint
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = spacing.medium)
-                        .background(Color.Black.copy(alpha = 0.7f), RoundedCornerShape(20.dp))
-                        .padding(horizontal = spacing.medium, vertical = spacing.small)
-                ) {
+                    Spacer(modifier = Modifier.height(spacing.medium))
+
                     Text(
                         text = stringResource(R.string.qr_scan_hint),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextWhite,
-                        textAlign = TextAlign.Center
-                    )
-                }
-
-                // Error Message if invalid QR was detected
-                scanError?.let { err ->
-                    Box(
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White,
+                        textAlign = TextAlign.Center,
                         modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(spacing.medium)
-                            .background(RedSurface, RoundedCornerShape(8.dp))
-                            .border(1.dp, RedPrimary, RoundedCornerShape(8.dp))
-                            .padding(spacing.small)
-                    ) {
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color.Black.copy(alpha = 0.6f))
+                            .padding(horizontal = spacing.medium, vertical = spacing.small)
+                    )
+
+                    uiState.scanErrorRes?.let { errRes ->
+                        Spacer(modifier = Modifier.height(spacing.small))
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(spacing.small)
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(RedSurface)
+                                .border(1.dp, RedPrimary, RoundedCornerShape(8.dp))
+                                .padding(horizontal = spacing.medium, vertical = spacing.small),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(Icons.Default.Warning, contentDescription = null, tint = RedPrimary, modifier = Modifier.size(16.dp))
-                            Text(
-                                text = err,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = TextWhite,
-                                modifier = Modifier.weight(1f)
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = RedPrimary,
+                                modifier = Modifier.size(16.dp)
                             )
-                            IconButton(
-                                onClick = { scanError = null },
-                                modifier = Modifier.size(24.dp)
-                            ) {
-                                Icon(Icons.Default.Close, contentDescription = null, tint = TextMuted, modifier = Modifier.size(16.dp))
-                            }
+                            Spacer(modifier = Modifier.width(spacing.small))
+                            Text(
+                                text = stringResource(errRes),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = RedPrimary,
+                                textAlign = TextAlign.Center
+                            )
                         }
                     }
-                }
-            }
-
-            // Bottom Privacy Notice
-            Surface(
-                color = DarkNavyCard,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(spacing.medium),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Security,
-                        contentDescription = null,
-                        tint = TextMuted,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(spacing.small))
-                    Text(
-                        text = stringResource(R.string.qr_privacy_note),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextMuted
-                    )
                 }
             }
         }
@@ -419,47 +382,49 @@ fun QrScanScreen(
 
 @Composable
 private fun ProfileDetailRow(label: String, value: String) {
-    if (value.isBlank()) return
-    Column(modifier = Modifier.padding(vertical = 4.dp)) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = TextMuted
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            color = TextWhite,
-            fontWeight = FontWeight.Medium
-        )
+    if (value.isNotBlank()) {
+        Column(modifier = Modifier.padding(vertical = 4.dp)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = TextMuted
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextWhite,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
     }
 }
 
 @Composable
 private fun CameraPreviewView(
+    isTorchOn: Boolean,
     onBarcodeScanned: (String) -> Unit,
-    onCameraReady: (Camera) -> Unit
+    onCameraReady: (Camera) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
-    val barcodeScanner = remember { BarcodeScanning.getClient() }
-    var isAnalyzing by remember { mutableStateOf(true) }
 
     DisposableEffect(Unit) {
         onDispose {
             cameraExecutor.shutdown()
-            barcodeScanner.close()
         }
     }
 
     AndroidView(
         factory = { ctx ->
-            val previewView = PreviewView(ctx)
-            val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
+            val previewView = PreviewView(ctx).apply {
+                scaleType = PreviewView.ScaleType.FILL_CENTER
+            }
 
+            val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
             cameraProviderFuture.addListener({
                 val cameraProvider = cameraProviderFuture.get()
+
                 val preview = Preview.Builder().build().also {
                     it.setSurfaceProvider(previewView.surfaceProvider)
                 }
@@ -468,44 +433,45 @@ private fun CameraPreviewView(
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
 
+                val barcodeScanner = BarcodeScanning.getClient()
+
                 imageAnalysis.setAnalyzer(cameraExecutor) { imageProxy ->
-                    processImageProxy(barcodeScanner, imageProxy, isAnalyzing) { rawValue ->
-                        onBarcodeScanned(rawValue)
-                    }
+                    processImageProxy(barcodeScanner, imageProxy, onBarcodeScanned)
                 }
 
                 val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
                 try {
                     cameraProvider.unbindAll()
-                    val cam = cameraProvider.bindToLifecycle(
+                    val camera = cameraProvider.bindToLifecycle(
                         lifecycleOwner,
                         cameraSelector,
                         preview,
                         imageAnalysis
                     )
-                    onCameraReady(cam)
+                    camera.cameraControl.enableTorch(isTorchOn)
+                    onCameraReady(camera)
                 } catch (_: Exception) {
+                    // Camera binding failed
                 }
             }, ContextCompat.getMainExecutor(ctx))
 
             previewView
         },
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier
     )
 }
 
-@androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
+@OptIn(ExperimentalGetImage::class)
 private fun processImageProxy(
-    scanner: com.google.mlkit.vision.barcode.BarcodeScanner,
+    barcodeScanner: com.google.mlkit.vision.barcode.BarcodeScanner,
     imageProxy: ImageProxy,
-    isEnabled: Boolean,
     onSuccess: (String) -> Unit
 ) {
     val mediaImage = imageProxy.image
-    if (mediaImage != null && isEnabled) {
+    if (mediaImage != null) {
         val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-        scanner.process(image)
+        barcodeScanner.process(image)
             .addOnSuccessListener { barcodes ->
                 for (barcode in barcodes) {
                     val raw = barcode.rawValue
