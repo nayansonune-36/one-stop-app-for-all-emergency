@@ -119,6 +119,12 @@
     <string name="medical_saved_success">चिकित्सीय पहचान डिवाइस पर सहेजी गई।</string>
     <string name="medical_unlocked_success">चिकित्सीय पहचान अनलॉक हुई।</string>
     <string name="medical_imported_success">आपकी सहमति से चिकित्सीय पहचान आयात की गई।</string>
+    <string name="medical_val_name_required">सहेजने से पहले नाम दर्ज करना आवश्यक है।</string>
+    <string name="medical_val_invalid_age">कृपया मान्य आयु (0–130) दर्ज करें।</string>
+    <string name="medical_val_invalid_phone">कृपया एक मान्य फ़ोन नंबर दर्ज करें।</string>
+    <string name="medical_blood_dropdown_label">रक्त समूह चुनें</string>
+    <string name="medical_btn_show_qr">क्यूआर कोड दिखाएं</string>
+    <string name="medical_btn_show_qr_fullscreen">आपातकालीन क्यूआर दिखाएं (पूर्ण स्क्रीन)</string>
     <string name="qr_modal_title">आपातकालीन चिकित्सीय पहचान</string>
     <string name="qr_modal_desc">ऑफ़लाइन आपातकालीन चिकित्सीय विवरण देखने के लिए किसी भी SENTINEL डिवाइस से इस QR कोड को स्कैन करें।</string>
     <string name="qr_modal_close">QR बंद करें</string>
@@ -132,6 +138,9 @@
     <string name="qr_invalid_code">इस QR कोड में समर्थित चिकित्सीय पहचान जानकारी नहीं है। कोड जाँचकर फिर प्रयास करें।</string>
     <string name="qr_found_title">चिकित्सीय पहचान मिली</string>
     <string name="qr_found_desc">पढ़ी गई जानकारी की समीक्षा करें। व्यक्ति की सहमति से ही आयात करें।</string>
+    <string name="qr_scanned_profile_banner">स्कैन किया गया प्रोफ़ाइल</string>
+    <string name="qr_scanned_profile_desc">आपातकालीन मेडिकल आईडी क्यूआर कोड से डिकोड किया गया</string>
+    <string name="qr_camera_permission_denied_help">कैमरा अनुमति अस्वीकार कर दी गई है। मेडिकल आईडी क्यूआर कोड स्कैन करने के लिए कृपया सेटिंग में कैमरा एक्सेस प्रदान करें।</string>
     <string name="qr_btn_import">सहमति की पुष्टि · चिकित्सीय पहचान आयात करें</string>
     <string name="qr_btn_scan_again">दूसरा कोड स्कैन करें</string>
     <string name="qr_privacy_note">कैमरा फ़्रेम इस डिवाइस पर ही रहते हैं।</string>
@@ -176,6 +185,9 @@
     <string name="firstaid_important_warning">महत्वपूर्ण सावधानी</string>
     <string name="firstaid_back_to_guides">सभी गाइड पर वापस जाएं</string>
     <string name="firstaid_no_results">कोई मेल खाती गाइड नहीं मिली</string>
+    <string name="firstaid_not_substitute">व्यावसायिक चिकित्सा देखभाल का विकल्प नहीं है। आपात स्थिति में, हमेशा तुरंत 112 या 108 पर कॉल करें।</string>
+    <string name="firstaid_when_to_call_title">112 / 108 पर कब कॉल करें</string>
+    <string name="firstaid_steps_title">कार्य कदम</string>
 
     <!-- Settings Screen -->
     <string name="screen_settings_title">सेटिंग्स</string>

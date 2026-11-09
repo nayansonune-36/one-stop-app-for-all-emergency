@@ -119,6 +119,12 @@
     <string name="medical_saved_success">Medical ID saved locally.</string>
     <string name="medical_unlocked_success">Medical ID unlocked.</string>
     <string name="medical_imported_success">Medical ID imported with your consent.</string>
+    <string name="medical_val_name_required">Name is required before saving.</string>
+    <string name="medical_val_invalid_age">Please enter a valid age (0–130).</string>
+    <string name="medical_val_invalid_phone">Please enter a valid phone number.</string>
+    <string name="medical_blood_dropdown_label">Select blood group</string>
+    <string name="medical_btn_show_qr">Show QR Code</string>
+    <string name="medical_btn_show_qr_fullscreen">Show Emergency QR (Full Screen)</string>
     <string name="qr_modal_title">Emergency Medical ID</string>
     <string name="qr_modal_desc">Scan this QR code with any SENTINEL device to view offline emergency medical details.</string>
     <string name="qr_modal_close">Close QR</string>
@@ -132,6 +138,9 @@
     <string name="qr_invalid_code">This QR code does not contain supported Medical ID information. Check the code and try again.</string>
     <string name="qr_found_title">Medical ID found</string>
     <string name="qr_found_desc">Review the decoded information. Import it only with the person’s consent.</string>
+    <string name="qr_scanned_profile_banner">Scanned Profile</string>
+    <string name="qr_scanned_profile_desc">Decoded from emergency Medical ID QR code</string>
+    <string name="qr_camera_permission_denied_help">Camera permission is denied. Please grant camera access in Settings to scan Medical ID QR codes.</string>
     <string name="qr_btn_import">Consent confirmed · Import Medical ID</string>
     <string name="qr_btn_scan_again">Scan another code</string>
     <string name="qr_privacy_note">Camera frames stay on this device.</string>
@@ -176,6 +185,9 @@
     <string name="firstaid_important_warning">Important</string>
     <string name="firstaid_back_to_guides">Back to all guides</string>
     <string name="firstaid_no_results">No matching guides found</string>
+    <string name="firstaid_not_substitute">Not a substitute for professional medical care. In an emergency, always call 112 or 108 immediately.</string>
+    <string name="firstaid_when_to_call_title">When to call 112 / 108</string>
+    <string name="firstaid_steps_title">Action Steps</string>
 
     <!-- Settings Screen -->
     <string name="screen_settings_title">Settings</string>

@@ -24,6 +24,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
@@ -37,6 +38,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -49,9 +54,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -75,6 +84,8 @@ import com.sentinel.app.ui.theme.TextMuted
 import com.sentinel.app.ui.theme.TextWhite
 import com.sentinel.app.ui.theme.spacing
 
+private val BLOOD_GROUPS = listOf("A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Unknown")
+
 @Composable
 fun MedicalScreen(
     viewModel: MedicalViewModel,
@@ -85,30 +96,19 @@ fun MedicalScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(uiState.errorMessage, uiState.infoMessage) {
-        uiState.errorMessage?.let { code ->
-            val msg = when (code) {
-                "NAME_REQUIRED" -> context.getString(R.string.medical_name_required)
-                "INCORRECT_PIN" -> context.getString(R.string.medical_lock_incorrect_pin)
-                else -> code
-            }
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+    LaunchedEffect(uiState.errorMessageRes, uiState.infoMessageRes) {
+        uiState.errorMessageRes?.let { resId ->
+            Toast.makeText(context, context.getString(resId), Toast.LENGTH_SHORT).show()
             viewModel.clearMessages()
         }
-        uiState.infoMessage?.let { code ->
-            val msg = when (code) {
-                "SAVED_SUCCESS" -> context.getString(R.string.medical_saved_success)
-                "UNLOCKED_SUCCESS" -> context.getString(R.string.medical_unlocked_success)
-                "IMPORTED_SUCCESS" -> context.getString(R.string.medical_imported_success)
-                else -> code
-            }
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+        uiState.infoMessageRes?.let { resId ->
+            Toast.makeText(context, context.getString(resId), Toast.LENGTH_SHORT).show()
             viewModel.clearMessages()
         }
     }
 
     if (!uiState.isUnlocked) {
-        // Locked State UI
+        // Locked State UI requiring biometric/device credential
         MedicalLockScreen(
             pinInput = uiState.pinInput,
             onPinChange = { viewModel.updatePinInput(it) },
@@ -204,7 +204,7 @@ fun MedicalScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(spacing.medium)
             ) {
-                // Hero Card
+                // Hero Profile Card
                 Card(
                     colors = CardDefaults.cardColors(containerColor = DarkNavyCard),
                     border = CardDefaults.outlinedCardBorder(),
@@ -247,7 +247,7 @@ fun MedicalScreen(
                             )
                         }
 
-                        if (uiState.profile.blood.isNotBlank()) {
+                        if (uiState.profile.bloodGroup.isNotBlank()) {
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(8.dp))
@@ -256,7 +256,7 @@ fun MedicalScreen(
                                     .padding(horizontal = spacing.small, vertical = 4.dp)
                             ) {
                                 Text(
-                                    text = uiState.profile.blood,
+                                    text = uiState.profile.bloodGroup,
                                     style = MaterialTheme.typography.titleSmall,
                                     color = RedPrimary,
                                     fontWeight = FontWeight.Bold
@@ -293,10 +293,13 @@ fun MedicalScreen(
 
                 Spacer(modifier = Modifier.height(spacing.medium))
 
-                // Profile Fields Form
+                // Profile Fields Form (Edit or View mode)
                 MedicalFieldsForm(
                     profile = if (uiState.isEditing) uiState.draftProfile else uiState.profile,
                     isEditing = uiState.isEditing,
+                    nameErrorRes = uiState.nameErrorRes,
+                    ageErrorRes = uiState.ageErrorRes,
+                    phoneErrorRes = uiState.phoneErrorRes,
                     onProfileChange = { updated ->
                         viewModel.updateDraft { updated }
                     }
@@ -334,7 +337,27 @@ fun MedicalScreen(
                 } else {
                     Spacer(modifier = Modifier.height(spacing.medium))
 
-                    // QR Actions
+                    // Prominent "Show QR" Button
+                    Button(
+                        onClick = { viewModel.toggleQrDialog(true) },
+                        colors = ButtonDefaults.buttonColors(containerColor = RedPrimary),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                    ) {
+                        Icon(Icons.Default.QrCode, contentDescription = null, modifier = Modifier.size(22.dp))
+                        Spacer(modifier = Modifier.width(spacing.small))
+                        Text(
+                            text = stringResource(R.string.medical_btn_show_qr_fullscreen),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(spacing.small))
+
+                    // QR Scanner shortcut card
                     Card(
                         colors = CardDefaults.cardColors(containerColor = DarkNavyCard),
                         border = CardDefaults.outlinedCardBorder(),
@@ -374,54 +397,12 @@ fun MedicalScreen(
                             Icon(Icons.Default.ChevronRight, contentDescription = null, tint = TextMuted)
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(spacing.small))
-
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = DarkNavyCard),
-                        border = CardDefaults.outlinedCardBorder(),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { viewModel.toggleQrDialog(true) }
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(spacing.medium),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(CircleShape)
-                                    .background(DarkNavySurface),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(Icons.Default.QrCode, contentDescription = null, tint = RedPrimary, modifier = Modifier.size(20.dp))
-                            }
-                            Spacer(modifier = Modifier.width(spacing.medium))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = stringResource(R.string.medical_btn_share_qr),
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = TextWhite,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = stringResource(R.string.medical_btn_share_qr_sub),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = TextMuted
-                                )
-                            }
-                            Icon(Icons.Default.ChevronRight, contentDescription = null, tint = TextMuted)
-                        }
-                    }
                 }
             }
         }
     }
 
-    // Emergency QR Code Dialog
+    // Emergency QR Code Dialog / Full-screen modal
     if (uiState.showQrDialog) {
         Dialog(onDismissRequest = { viewModel.toggleQrDialog(false) }) {
             Card(
@@ -465,10 +446,10 @@ fun MedicalScreen(
 
                     Box(
                         modifier = Modifier
-                            .size(240.dp)
+                            .size(260.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(androidx.compose.ui.graphics.Color.White)
-                            .padding(8.dp),
+                            .background(Color.White)
+                            .padding(12.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         uiState.qrBitmap?.let { bmp ->
@@ -624,6 +605,9 @@ private fun MedicalLockScreen(
 private fun MedicalFieldsForm(
     profile: MedicalProfile,
     isEditing: Boolean,
+    nameErrorRes: Int?,
+    ageErrorRes: Int?,
+    phoneErrorRes: Int?,
     onProfileChange: (MedicalProfile) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(spacing.small)) {
@@ -632,6 +616,7 @@ private fun MedicalFieldsForm(
             value = profile.name,
             placeholder = stringResource(R.string.medical_placeholder_name),
             isEditing = isEditing,
+            errorMessage = nameErrorRes?.let { stringResource(it) },
             onValueChange = { onProfileChange(profile.copy(name = it)) }
         )
 
@@ -646,16 +631,15 @@ private fun MedicalFieldsForm(
                     placeholder = stringResource(R.string.medical_placeholder_age),
                     isEditing = isEditing,
                     keyboardType = KeyboardType.Number,
+                    errorMessage = ageErrorRes?.let { stringResource(it) },
                     onValueChange = { onProfileChange(profile.copy(age = it)) }
                 )
             }
             Box(modifier = Modifier.weight(1f)) {
-                FormField(
-                    label = stringResource(R.string.medical_field_blood),
-                    value = profile.blood,
-                    placeholder = stringResource(R.string.medical_placeholder_blood),
+                BloodGroupSelector(
+                    selectedGroup = profile.bloodGroup,
                     isEditing = isEditing,
-                    onValueChange = { onProfileChange(profile.copy(blood = it)) }
+                    onSelected = { onProfileChange(profile.copy(bloodGroup = it)) }
                 )
             }
         }
@@ -686,30 +670,94 @@ private fun MedicalFieldsForm(
 
         FormField(
             label = stringResource(R.string.medical_field_contact_name),
-            value = profile.contactName,
+            value = profile.emergencyContactName,
             placeholder = stringResource(R.string.medical_placeholder_name),
             isEditing = isEditing,
-            onValueChange = { onProfileChange(profile.copy(contactName = it)) }
+            onValueChange = { onProfileChange(profile.copy(emergencyContactName = it)) }
         )
 
         FormField(
             label = stringResource(R.string.medical_field_contact_phone),
-            value = profile.contactPhone,
+            value = profile.emergencyContactPhone,
             placeholder = stringResource(R.string.medical_field_contact_phone),
             isEditing = isEditing,
             keyboardType = KeyboardType.Phone,
-            onValueChange = { onProfileChange(profile.copy(contactPhone = it)) }
+            errorMessage = phoneErrorRes?.let { stringResource(it) },
+            onValueChange = { onProfileChange(profile.copy(emergencyContactPhone = it)) }
         )
+    }
+}
 
-        FormField(
-            label = stringResource(R.string.medical_field_notes),
-            value = profile.notes,
-            placeholder = stringResource(R.string.medical_placeholder_notes),
-            isEditing = isEditing,
-            singleLine = false,
-            minLines = 3,
-            onValueChange = { onProfileChange(profile.copy(notes = it)) }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BloodGroupSelector(
+    selectedGroup: String,
+    isEditing: Boolean,
+    onSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column {
+        Text(
+            text = stringResource(R.string.medical_field_blood),
+            style = MaterialTheme.typography.labelSmall,
+            color = TextMuted,
+            modifier = Modifier.padding(bottom = 4.dp)
         )
+        if (isEditing) {
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
+                OutlinedTextField(
+                    value = selectedGroup.ifBlank { stringResource(R.string.medical_placeholder_blood) },
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = TextWhite,
+                        unfocusedTextColor = TextWhite,
+                        focusedContainerColor = DarkNavyCard,
+                        unfocusedContainerColor = DarkNavyCard,
+                        focusedBorderColor = RedPrimary,
+                        unfocusedBorderColor = DividerBorder
+                    ),
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.background(DarkNavyCard)
+                ) {
+                    BLOOD_GROUPS.forEach { bg ->
+                        DropdownMenuItem(
+                            text = { Text(bg, color = TextWhite) },
+                            onClick = {
+                                onSelected(if (bg == "Unknown") "" else bg)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+        } else {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = DarkNavyCard),
+                border = CardDefaults.outlinedCardBorder(),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = selectedGroup.ifBlank { stringResource(R.string.medical_placeholder_blood) },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (selectedGroup.isBlank()) TextMuted else TextWhite,
+                    modifier = Modifier.padding(horizontal = spacing.medium, vertical = 12.dp)
+                )
+            }
+        }
     }
 }
 
@@ -722,6 +770,7 @@ private fun FormField(
     singleLine: Boolean = true,
     minLines: Int = 1,
     keyboardType: KeyboardType = KeyboardType.Text,
+    errorMessage: String? = null,
     onValueChange: (String) -> Unit
 ) {
     Column {
@@ -738,6 +787,10 @@ private fun FormField(
                 placeholder = { Text(placeholder, color = TextMuted) },
                 singleLine = singleLine,
                 minLines = minLines,
+                isError = errorMessage != null,
+                supportingText = errorMessage?.let {
+                    { Text(it, color = MaterialTheme.colorScheme.error) }
+                },
                 keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = TextWhite,
@@ -745,7 +798,8 @@ private fun FormField(
                     focusedContainerColor = DarkNavyCard,
                     unfocusedContainerColor = DarkNavyCard,
                     focusedBorderColor = RedPrimary,
-                    unfocusedBorderColor = DividerBorder
+                    unfocusedBorderColor = DividerBorder,
+                    errorBorderColor = MaterialTheme.colorScheme.error
                 ),
                 modifier = Modifier.fillMaxWidth()
             )

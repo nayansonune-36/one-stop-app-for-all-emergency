@@ -2,9 +2,11 @@ package com.sentinel.app.feature.medical
 
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.sentinel.app.R
 import com.sentinel.app.feature.medical.data.MedicalRepository
 import com.sentinel.app.feature.medical.model.MedicalProfile
 import com.sentinel.app.feature.medical.util.MedicalQrParser
@@ -23,8 +25,11 @@ data class MedicalUiState(
     val isLocked: Boolean = false,
     val isUnlocked: Boolean = true,
     val pinInput: String = "",
-    val errorMessage: String? = null,
-    val infoMessage: String? = null,
+    @StringRes val nameErrorRes: Int? = null,
+    @StringRes val ageErrorRes: Int? = null,
+    @StringRes val phoneErrorRes: Int? = null,
+    @StringRes val errorMessageRes: Int? = null,
+    @StringRes val infoMessageRes: Int? = null,
     val showQrDialog: Boolean = false,
     val qrBitmap: Bitmap? = null
 )
@@ -68,29 +73,96 @@ class MedicalViewModel(
     }
 
     fun startEditing() {
-        _uiState.update { it.copy(isEditing = true, draftProfile = it.profile) }
+        _uiState.update {
+            it.copy(
+                isEditing = true,
+                draftProfile = it.profile,
+                nameErrorRes = null,
+                ageErrorRes = null,
+                phoneErrorRes = null,
+                errorMessageRes = null
+            )
+        }
     }
 
     fun cancelEditing() {
-        _uiState.update { it.copy(isEditing = false, draftProfile = it.profile) }
+        _uiState.update {
+            it.copy(
+                isEditing = false,
+                draftProfile = it.profile,
+                nameErrorRes = null,
+                ageErrorRes = null,
+                phoneErrorRes = null,
+                errorMessageRes = null
+            )
+        }
     }
 
     fun updateDraft(updater: (MedicalProfile) -> MedicalProfile) {
-        _uiState.update { it.copy(draftProfile = updater(it.draftProfile)) }
+        _uiState.update { current ->
+            current.copy(
+                draftProfile = updater(current.draftProfile),
+                nameErrorRes = null,
+                ageErrorRes = null,
+                phoneErrorRes = null,
+                errorMessageRes = null
+            )
+        }
     }
 
     fun saveDraft(): Boolean {
         val draft = _uiState.value.draftProfile
-        if (draft.name.isBlank()) {
-            _uiState.update { it.copy(errorMessage = "NAME_REQUIRED") }
+
+        // 1. Validate Name
+        if (draft.name.trim().isBlank()) {
+            _uiState.update {
+                it.copy(
+                    nameErrorRes = R.string.medical_val_name_required,
+                    errorMessageRes = R.string.medical_name_required
+                )
+            }
             return false
         }
+
+        // 2. Validate Age if entered
+        val ageStr = draft.age.trim()
+        if (ageStr.isNotBlank()) {
+            val ageInt = ageStr.toIntOrNull()
+            if (ageInt == null || ageInt !in 0..130) {
+                _uiState.update {
+                    it.copy(
+                        ageErrorRes = R.string.medical_val_invalid_age,
+                        errorMessageRes = R.string.medical_val_invalid_age
+                    )
+                }
+                return false
+            }
+        }
+
+        // 3. Validate Emergency Contact Phone if entered
+        val phoneStr = draft.emergencyContactPhone.trim()
+        if (phoneStr.isNotBlank()) {
+            val cleanPhone = phoneStr.filter { it.isDigit() || it == '+' || it == '-' || it == ' ' }
+            if (cleanPhone.length < 5 || phoneStr.any { it.isLetter() }) {
+                _uiState.update {
+                    it.copy(
+                        phoneErrorRes = R.string.medical_val_invalid_phone,
+                        errorMessageRes = R.string.medical_val_invalid_phone
+                    )
+                }
+                return false
+            }
+        }
+
         repository.saveProfile(draft)
         _uiState.update {
             it.copy(
                 isEditing = false,
-                errorMessage = null,
-                infoMessage = "SAVED_SUCCESS"
+                nameErrorRes = null,
+                ageErrorRes = null,
+                phoneErrorRes = null,
+                errorMessageRes = null,
+                infoMessageRes = R.string.medical_saved_success
             )
         }
         return true
@@ -101,44 +173,60 @@ class MedicalViewModel(
         val merged = current.copy(
             name = scanned.name.ifBlank { current.name },
             age = scanned.age.ifBlank { current.age },
-            blood = scanned.blood.ifBlank { current.blood },
+            bloodGroup = scanned.bloodGroup.ifBlank { current.bloodGroup },
             allergies = scanned.allergies.ifBlank { current.allergies },
             conditions = scanned.conditions.ifBlank { current.conditions },
             medications = scanned.medications.ifBlank { current.medications },
-            contactName = scanned.contactName.ifBlank { current.contactName },
-            contactPhone = scanned.contactPhone.ifBlank { current.contactPhone },
-            notes = scanned.notes.ifBlank { current.notes }
+            emergencyContactName = scanned.emergencyContactName.ifBlank { current.emergencyContactName },
+            emergencyContactPhone = scanned.emergencyContactPhone.ifBlank { current.emergencyContactPhone }
         )
         repository.saveProfile(merged)
         _uiState.update {
             it.copy(
                 profile = merged,
                 draftProfile = merged,
-                infoMessage = "IMPORTED_SUCCESS"
+                infoMessageRes = R.string.medical_imported_success
             )
         }
     }
 
     fun updatePinInput(pin: String) {
         val digits = pin.filter { it.isDigit() }.take(4)
-        _uiState.update { it.copy(pinInput = digits, errorMessage = null) }
+        _uiState.update { it.copy(pinInput = digits, errorMessageRes = null) }
     }
 
     fun unlockWithPin(): Boolean {
         val storedPin = repository.getPin()
         val entered = _uiState.value.pinInput
-        // If no PIN set or PIN matches
         if (storedPin == null || entered == storedPin) {
-            _uiState.update { it.copy(isUnlocked = true, pinInput = "", infoMessage = "UNLOCKED_SUCCESS") }
+            _uiState.update {
+                it.copy(
+                    isUnlocked = true,
+                    pinInput = "",
+                    infoMessageRes = R.string.medical_unlocked_success
+                )
+            }
             return true
         } else {
-            _uiState.update { it.copy(errorMessage = "INCORRECT_PIN") }
+            _uiState.update { it.copy(errorMessageRes = R.string.medical_lock_incorrect_pin) }
             return false
         }
     }
 
     fun unlockBiometric() {
-        _uiState.update { it.copy(isUnlocked = true, infoMessage = "UNLOCKED_SUCCESS") }
+        _uiState.update {
+            it.copy(
+                isUnlocked = true,
+                pinInput = "",
+                infoMessageRes = R.string.medical_unlocked_success
+            )
+        }
+    }
+
+    fun lockProfile() {
+        if (_uiState.value.isLocked) {
+            _uiState.update { it.copy(isUnlocked = false) }
+        }
     }
 
     fun toggleQrDialog(show: Boolean) {
@@ -154,7 +242,7 @@ class MedicalViewModel(
     }
 
     fun clearMessages() {
-        _uiState.update { it.copy(errorMessage = null, infoMessage = null) }
+        _uiState.update { it.copy(errorMessageRes = null, infoMessageRes = null) }
     }
 
     companion object {
