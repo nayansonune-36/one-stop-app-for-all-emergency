@@ -30,6 +30,10 @@
         android:name="android.permission.BLUETOOTH_CONNECT"
         tools:targetApi="s" />
 
+    <!-- Wi-Fi state permissions for Google Nearby Connections mesh -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+
     <!-- Nearby Wi-Fi devices for Android 13 (API 33)+ -->
     <uses-permission
         android:name="android.permission.NEARBY_WIFI_DEVICES"

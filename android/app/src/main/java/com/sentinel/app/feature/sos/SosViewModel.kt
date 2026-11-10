@@ -242,6 +242,7 @@ class SosViewModel(
     fun cancelSos() {
         timerJob?.cancel()
         timerJob = null
+        meshManager.resetDeliveryState()
         _uiState.update {
             it.copy(
                 isBroadcasting = false,

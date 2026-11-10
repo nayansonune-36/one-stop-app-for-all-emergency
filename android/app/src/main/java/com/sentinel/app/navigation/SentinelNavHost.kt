@@ -2,12 +2,15 @@ package com.sentinel.app.navigation
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.sentinel.app.core.medical.DefaultMedicalSummaryProvider
 import com.sentinel.app.core.medical.MedicalSummaryProvider
 import com.sentinel.app.core.mesh.MeshManager
@@ -20,6 +23,8 @@ import com.sentinel.app.feature.home.HomeScreen
 import com.sentinel.app.feature.home.HomeViewModel
 import com.sentinel.app.feature.map.MapScreen
 import com.sentinel.app.feature.map.MapViewModel
+import com.sentinel.app.feature.map.offline.OfflineMapsScreen
+import com.sentinel.app.feature.map.offline.OfflineMapsViewModel
 import com.sentinel.app.feature.medical.MedicalScreen
 import com.sentinel.app.feature.medical.MedicalViewModel
 import com.sentinel.app.feature.medical.QrScanScreen
@@ -56,7 +61,7 @@ fun SentinelNavHost(
                 onNavigateToMap = { navController.navigate(NavRoutes.MAP) },
                 onNavigateToMedical = { navController.navigate(NavRoutes.MEDICAL) },
                 onNavigateToBot = { navController.navigate(NavRoutes.BOT) },
-                onNavigateToSos = { navController.navigate(NavRoutes.SOS) },
+                onNavigateToSos = { navController.navigate("${NavRoutes.SOS}?autoTrigger=true") },
                 onNavigateToFirstAid = { navController.navigate(NavRoutes.FIRST_AID) },
                 onNavigateToSettings = { navController.navigate(NavRoutes.SETTINGS) }
             )
@@ -99,16 +104,33 @@ fun SentinelNavHost(
             )
             BotScreen(
                 viewModel = botViewModel,
-                onNavigateToSos = { navController.navigate(NavRoutes.SOS) },
+                onNavigateToSos = { navController.navigate("${NavRoutes.SOS}?autoTrigger=true") },
                 onNavigateToFirstAid = { navController.navigate(NavRoutes.FIRST_AID) }
             )
         }
 
-        composable(NavRoutes.SOS) {
+        composable(
+            route = "${NavRoutes.SOS}?autoTrigger={autoTrigger}",
+            arguments = listOf(
+                navArgument("autoTrigger") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                }
+            )
+        ) { backStackEntry ->
+            val autoTrigger = backStackEntry.arguments?.getBoolean("autoTrigger") ?: false
             val sosViewModel: SosViewModel = viewModel(
                 factory = SosViewModel.provideFactory(context, meshManager, medicalSummaryProvider)
             )
-            SosScreen(viewModel = sosViewModel)
+            LaunchedEffect(autoTrigger) {
+                if (autoTrigger && !sosViewModel.uiState.value.isBroadcasting) {
+                    sosViewModel.triggerSos()
+                }
+            }
+            SosScreen(
+                viewModel = sosViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         composable(NavRoutes.FIRST_AID) {
@@ -128,6 +150,17 @@ fun SentinelNavHost(
             SettingsScreen(
                 viewModel = settingsViewModel,
                 onNavigateToMedical = { navController.navigate(NavRoutes.MEDICAL) },
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToOfflineMaps = { navController.navigate(NavRoutes.OFFLINE_MAPS) }
+            )
+        }
+
+        composable(NavRoutes.OFFLINE_MAPS) {
+            val offlineMapsViewModel: OfflineMapsViewModel = viewModel(
+                factory = OfflineMapsViewModel.provideFactory(context)
+            )
+            OfflineMapsScreen(
+                viewModel = offlineMapsViewModel,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
