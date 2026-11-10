@@ -70,7 +70,8 @@
         android:label="@string/app_name"
         android:roundIcon="@android:drawable/ic_dialog_alert"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Sentinel">
+        android:theme="@style/Theme.Sentinel"
+        android:usesCleartextTraffic="true">
 
         <activity
             android:name=".MainActivity"
