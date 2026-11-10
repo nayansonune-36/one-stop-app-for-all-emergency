@@ -231,7 +231,23 @@ class MedicalViewModel(
 
     fun toggleQrDialog(show: Boolean) {
         if (show) {
-            val serialized = MedicalQrParser.serialize(_uiState.value.profile)
+            val prof = _uiState.value.profile
+            val isProfileEmpty = prof.name.isBlank() &&
+                    prof.bloodGroup.isBlank() &&
+                    prof.allergies.isBlank() &&
+                    prof.conditions.isBlank() &&
+                    prof.medications.isBlank() &&
+                    prof.emergencyContactName.isBlank() &&
+                    prof.emergencyContactPhone.isBlank()
+
+            if (isProfileEmpty) {
+                _uiState.update {
+                    it.copy(errorMessageRes = R.string.medical_qr_profile_empty_error)
+                }
+                return
+            }
+
+            val serialized = MedicalQrParser.serialize(prof)
             viewModelScope.launch(Dispatchers.Default) {
                 val bitmap = QrCodeGenerator.generateQrBitmap(serialized, 600)
                 _uiState.update { it.copy(showQrDialog = true, qrBitmap = bitmap) }

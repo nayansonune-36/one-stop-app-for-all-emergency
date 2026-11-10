@@ -10,6 +10,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,7 +41,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
@@ -48,6 +51,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -248,6 +252,128 @@ fun OnboardingScreen(
                 },
                 onOpenSettings = { openAppSettings(context) }
             )
+        }
+
+        Spacer(modifier = Modifier.height(spacing.medium))
+
+        // Home Area Step Card
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = DarkNavyCard),
+            border = CardDefaults.outlinedCardBorder(),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(spacing.medium)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF38BDF8).copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
+                            tint = Color(0xFF38BDF8),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(spacing.small))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.onboarding_home_zone_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = TextWhite
+                        )
+                        Text(
+                            text = stringResource(R.string.onboarding_home_zone_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextMuted
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(spacing.medium))
+
+                // Current selection badge
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = DarkNavySurface,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, DividerBorder),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "${uiState.homeZone.name} (${uiState.homeZone.radiusKm.toInt()} km)",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = TextWhite
+                        )
+                        if (uiState.locationStatus == PermissionStatus.GRANTED) {
+                            TextButton(onClick = { viewModel.tryPrefillFromGps() }) {
+                                Text(
+                                    text = stringResource(R.string.onboarding_home_zone_use_gps),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Color(0xFF38BDF8)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(spacing.small))
+
+                // Search Box
+                androidx.compose.material3.OutlinedTextField(
+                    value = uiState.searchCityQuery,
+                    onValueChange = { viewModel.onCitySearchChanged(it) },
+                    placeholder = { Text(stringResource(R.string.onboarding_home_zone_search_hint), color = TextMuted) },
+                    colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = TextWhite,
+                        unfocusedTextColor = TextWhite,
+                        focusedBorderColor = RedPrimary,
+                        unfocusedBorderColor = DividerBorder,
+                        focusedContainerColor = DarkNavySurface,
+                        unfocusedContainerColor = DarkNavySurface
+                    ),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                if (uiState.searchCityQuery.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(spacing.extraSmall))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(140.dp)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        for (city in uiState.citySearchResults.take(8)) {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = DarkNavySurface,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { viewModel.onCitySelected(city) }
+                            ) {
+                                Text(
+                                    text = "${city.name}, ${city.state}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextWhite,
+                                    modifier = Modifier.padding(8.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(spacing.large))

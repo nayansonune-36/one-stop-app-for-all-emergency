@@ -463,6 +463,46 @@ fun MedicalScreen(
 
                     Spacer(modifier = Modifier.height(spacing.medium))
 
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = DarkNavyBg),
+                        border = CardDefaults.outlinedCardBorder(),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(spacing.small)) {
+                            Text(
+                                text = stringResource(R.string.qr_encoded_summary_title),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = TextMuted,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            if (uiState.profile.name.isNotBlank()) {
+                                Text(
+                                    text = "${stringResource(R.string.medical_field_name)}: ${uiState.profile.name}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextWhite
+                                )
+                            }
+                            if (uiState.profile.bloodGroup.isNotBlank()) {
+                                Text(
+                                    text = "${stringResource(R.string.medical_field_blood)}: ${uiState.profile.bloodGroup}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = RedPrimary,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            if (uiState.profile.emergencyContactPhone.isNotBlank()) {
+                                Text(
+                                    text = "${stringResource(R.string.medical_field_contact_phone)}: ${uiState.profile.emergencyContactPhone}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextWhite
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(spacing.medium))
+
                     Button(
                         onClick = { viewModel.toggleQrDialog(false) },
                         colors = ButtonDefaults.buttonColors(containerColor = RedPrimary),

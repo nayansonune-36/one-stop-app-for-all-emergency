@@ -1,0 +1,10 @@
+{
+  "description": "An offline-first emergency preparedness app with SOS, shelter maps, medical ID, and step-by-step first-aid guides for people who need help during a crisis.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

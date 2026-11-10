@@ -21,6 +21,7 @@ object NavRoutes {
     const val SOS = "sos"
     const val ONBOARDING = "onboarding"
     const val QR_SCANNER = "qr_scanner"
+    const val OFFLINE_MAPS = "offline_maps"
 }
 
 sealed class BottomNavItem(

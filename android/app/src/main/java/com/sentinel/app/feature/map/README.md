@@ -1,53 +1,66 @@
-# S.E.N.T.I.N.E.L. Offline Emergency Map (`feature/map`)
+# S.E.N.T.I.N.E.L. Hybrid All-India Emergency Map (`feature/map`)
 
 ## Overview
 
-The Map feature provides a **100% offline-first emergency facility locator and navigation viewer** designed to operate without cellular connectivity or internet access during disaster scenarios.
+The Map feature provides a **hybrid offline-first emergency facility locator and navigation viewer** designed to operate seamlessly across all of India both online and offline during disaster scenarios:
 
-### Core Architecture
-- **Rendering Engine**: MapLibre Native Android (`org.maplibre.gl:android-sdk`).
-- **Offline Basemap Style**: `asset://map/offline_style.json` — dark high-contrast vector style matching S.E.N.T.I.N.E.L. design system (`#0B1220`, `#121A2B`, `#182C48`) with local water corridors (Brahmaputra River) and regional municipal boundaries (`asset://map/guwahati_basemap.geojson`).
-- **MBTiles Bundling Support**: `MapAssetManager` automatically detects and extracts any pre-bundled vector MBTiles tile packages (`guwahati.mbtiles` under 40 MB) from assets to internal storage on launch.
-- **Offline POI Registry**: Parses verified shelters, hospitals, and relief camps from `assets/shelters.json` using `kotlinx.serialization` (as specified in `docs/DATA.md`). Gracefully handles empty registry (`[]`) without crashing.
-- **Dynamic Proximity Triage**: Calculates real-time Haversine great-circle distance between the user's GPS fix and nearby facilities, dynamically updating the **Nearest Emergency Facility** card.
-- **Localization**: Full dual English and Hindi (Devanagari) localization for all strings, names, and categories.
+### Core Architecture & Hybrid Map Strategy
+- **Home Zone (Local Pack)**: The user's home area (25–50 km radius) is stored directly on the device and always works offline up to zoom 15. When viewport intersects the home zone, local tiles are used even when online.
+- **Rest of India (Online Live Vector Tiles)**: Live map tiles when connected to the internet via `TILES_BASE_URL` (configured via `local.properties` or environment).
+- **Rest of India (Offline Fallback)**: Coarse low-zoom base map bundled with the app (`india_base.pmtiles`/`india_base.mbtiles` up to zoom 7) accompanied by a floating card *"Detailed map unavailable offline here"*.
+- **Rendering Engine**: MapLibre Native Android (`org.maplibre.gl:android-sdk`) powered by an internal loopback tile server (`LocalTileServer` on `127.0.0.1`) that dynamically negotiates source order.
+- **Source Order**:
+  1. `HOME_PACK`: Inside user's configured Home Zone bounding box (online or offline).
+  2. `LIVE_SOURCE`: Outside Home Zone when device has active network connectivity.
+  3. `INDIA_BASE`: Outside Home Zone when offline for zoom <= 7.
+  4. `OVERZOOM_OR_EMPTY`: Returns HTTP 204 No Content for clean overzoom without visual artifacts or blank screen.
+- **Ambient Cache**: 100 MB limit set on MapLibre Native ambient cache via `OfflineManager.setMaximumAmbientCacheSize`.
+- **Zero OpenStreetMap Abuse**: Never fetches from `tile.openstreetmap.org`.
 
 ---
 
-## Airplane Mode Verification Guide
+## Emulator & Physical Device Manual Testing Procedure
 
-Follow these steps to verify zero-network offline functionality on a physical Android device or emulator:
+### Step 1: Set Emulator GPS to Guwahati
+1. In Android Studio Emulator Extended Controls (`...` button):
+   - Navigate to **Location**.
+   - Enter Latitude: `26.1445`, Longitude: `91.7362` (Guwahati, Assam).
+   - Click **Save Point** and **Set Location**.
 
-### Step 1: Enable Airplane Mode
-1. Swipe down the Android Notification Shade / Quick Settings.
-2. Tap **Airplane Mode** to disable Cellular Data, Wi-Fi, and Internet connectivity.
-3. Confirm that no active network connection is present (status bar shows airplane icon).
+### Step 2: Set Home Zone to Guwahati
+1. Launch S.E.N.T.I.N.E.L.
+2. In Onboarding or under **Settings > Offline maps**:
+   - Verify Home Zone is set to **Guwahati** (prefilled from location or selected via city search).
+   - Check status chip displays: `Home area: offline ready` (or wait for download worker to complete).
+   - Observe pack size and internal storage allocation.
 
-### Step 2: Launch App & Open Map Tab
-1. Open S.E.N.T.I.N.E.L.
-2. Tap the **Map** tab on the bottom navigation bar.
-3. **Verify**:
-   - The offline dark basemap renders immediately with zero network errors.
-   - The top offline badge displays: `Offline Basemap (Guwahati Bounding Box)`.
-   - No crash occurs, and Logcat confirms no external HTTP network requests are initiated.
+### Step 3: Test Home Zone in Airplane Mode (Offline)
+1. Turn ON **Airplane Mode** on the device / emulator.
+2. Open the **Map** tab:
+   - Verify status chip displays: `Home area: offline ready`.
+   - Pan and zoom in to zoom levels 14 to 16 around **GMCH (Gauhati Medical College)** and **Dispur**.
+   - Verify streets, buildings, and local labels render crisp without network connectivity.
 
-### Step 3: Verify Marker Display & Category Legend
-1. Observe the emergency facility markers rendered across the Guwahati region:
-   - **Hospital (Red Circle with White Cross)**: e.g., Gauhati Medical College & Hospital (GMCH).
-   - **Relief Camp (Cyan Circle with White Tent)**: e.g., Sarusajai Indoor Stadium Relief Center.
-   - **Shelter (Amber Circle with White House)**: e.g., Nehru Stadium Emergency Shelter.
-2. If location permission is granted, observe the green pulsing user location dot marker at your GPS position.
+### Step 4: Pan to Delhi in Airplane Mode (Offline Fallback)
+1. Still in **Airplane Mode**, pan the map across India to **Delhi** (Lat `28.6139`, Lon `77.2090`).
+2. Verify:
+   - Coarse India base map renders at regional zoom levels (zoom <= 7).
+   - Status chip indicates: `Offline: limited detail here`.
+   - The floating warning card **"Detailed map unavailable offline here"** appears at the bottom.
+   - Tapping the card opens **Offline maps** settings to configure or download that zone.
 
-### Step 4: Verify Nearest Shelter Card & Distance
-1. At the top of the screen, locate the **Nearest Emergency Facility** card.
-2. Check that it displays:
-   - Facility name in the active app language (English or Hindi).
-   - Calculated Haversine distance (e.g., `1.8 km away`).
-3. Tap the card: the map camera animates and zooms directly to the facility, opening its detail sheet.
+### Step 5: Disable Airplane Mode (Online Outside Home Zone)
+1. Turn OFF **Airplane Mode** to re-enable Wi-Fi or cellular data.
+2. Return to the Map screen viewing Delhi:
+   - Notice the status chip transitions to `Online map`.
+   - Detailed live vector tiles stream and render dynamically for Delhi and surrounding regions.
+   - The "Detailed map unavailable offline here" card automatically dismisses.
 
-### Step 5: Verify Facility Detail Bottom Sheet
-1. Tap any facility marker on the map.
-2. Verify that the bottom sheet displays:
+### Step 6: Verify Markers, Clustering & Nearest Facility Rules
+1. Markers are clustered when facilities share coordinates.
+2. Tapping a cluster expands the list sheet.
+3. Approximate markers display dashed yellow borders and the `"Approximate location"` badge.
+4. Nearest shelter card respects the strict 50 km and `coord_precision == "exact"` rules. If no exact facility is within 50 km, it shows `"No shelter found near you yet"`.
    - Facility title in selected language (`name` or `name_hi`).
    - Category badge with matching color and icon.
    - Street address.

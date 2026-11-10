@@ -104,7 +104,23 @@ The bottom navigation bar contains 5 primary tabs:
 
 ---
 
-## 5. Branching and Pull Request Rules
+## 5. Shelter Data Rules
+
+All agents and contributors working with `/data/shelters.json` and `feature/map` must enforce these rules:
+1. **Sample Data Only:** The dataset contains demo/sample data for simulation. It must **never** be described, badged, or labeled in the UI as "live", "complete", or "verified". Remove any UI wording or badges implying verified/live status.
+2. **Coordinate Precision:** Entries have `coord_precision`: `"exact"` or `"approximate"`. An approximate entry uses a town or neighborhood center, not the exact building. Multiple entries may share identical coordinates.
+3. **Distance Calculation & Nearest Shelter:**
+   - Only consider entries within **50 km** of the user's location.
+   - Only consider entries with `coord_precision == "exact"` for distance figures.
+   - If no qualifying shelter is within 50 km (or none are exact), show `"No shelter found near you yet"`.
+   - **Never** show a numeric distance for an approximate entry. Instead, show an `"Approximate location"` badge.
+4. **Phone Numbers & Control Rooms:** Some phone numbers are district emergency control rooms (`1077`, `1913`, DDMA lines). When `phone` is 1077, 1913, or `data_notes` mentions a control room, label it clearly as `"District control room"`.
+5. **Data Integrity:** Do NOT edit shelter values themselves except to fix JSON syntax. Never invent coordinates, phone numbers, or capacities.
+6. **Robust Parsing:** `ShelterRepository` must use `ignoreUnknownKeys = true` and skip/log corrupt entries without crashing.
+
+---
+
+## 6. Branching and Pull Request Rules
 
 1. **Branch Naming:**
    - Features: `feature/<agent-or-dev>/<short-desc>` (e.g., `feature/dev-a/medical-id`)
@@ -119,7 +135,7 @@ The bottom navigation bar contains 5 primary tabs:
 
 ---
 
-## 6. How to Build and Run
+## 7. How to Build and Run
 
 ### Android App
 ```bash

@@ -12,6 +12,8 @@ if (localPropertiesFile.exists()) {
     localProperties.load(localPropertiesFile.inputStream())
 }
 val backendBaseUrl: String = localProperties.getProperty("BACKEND_BASE_URL") ?: "http://10.0.2.2:8080"
+val tilesBaseUrl: String = localProperties.getProperty("TILES_BASE_URL") ?: ""
+val tilesApiKey: String = localProperties.getProperty("TILES_API_KEY") ?: ""
 
 android {
     namespace = "com.sentinel.app"
@@ -30,6 +32,8 @@ android {
         }
 
         buildConfigField("String", "BACKEND_BASE_URL", "\"$backendBaseUrl\"")
+        buildConfigField("String", "TILES_BASE_URL", "\"$tilesBaseUrl\"")
+        buildConfigField("String", "TILES_API_KEY", "\"$tilesApiKey\"")
     }
 
     buildTypes {
@@ -105,6 +109,9 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
     implementation("androidx.camera:camera-view:$cameraxVersion")
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
+
+    // WorkManager for background home pack downloads
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     // ZXing for offline QR code generation
     implementation("com.google.zxing:core:3.5.3")

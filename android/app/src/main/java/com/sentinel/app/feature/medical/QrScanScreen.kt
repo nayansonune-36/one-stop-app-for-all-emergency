@@ -70,8 +70,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import com.google.zxing.BinaryBitmap
+import com.google.zxing.DecodeHintType
+import com.google.zxing.MultiFormatReader
+import com.google.zxing.PlanarYUVLuminanceSource
+import com.google.zxing.common.HybridBinarizer
 import com.sentinel.app.R
 import com.sentinel.app.feature.medical.model.MedicalProfile
 import com.sentinel.app.ui.theme.DarkNavyBg
@@ -431,9 +438,13 @@ private fun CameraPreviewView(
 
                 val imageAnalysis = ImageAnalysis.Builder()
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .setTargetResolution(android.util.Size(1280, 720))
                     .build()
 
-                val barcodeScanner = BarcodeScanning.getClient()
+                val options = BarcodeScannerOptions.Builder()
+                    .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+                    .build()
+                val barcodeScanner = BarcodeScanning.getClient(options)
 
                 imageAnalysis.setAnalyzer(cameraExecutor) { imageProxy ->
                     processImageProxy(barcodeScanner, imageProxy, onBarcodeScanned)
@@ -473,18 +484,54 @@ private fun processImageProxy(
         val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
         barcodeScanner.process(image)
             .addOnSuccessListener { barcodes ->
+                var found = false
                 for (barcode in barcodes) {
-                    val raw = barcode.rawValue
+                    val raw = barcode.rawValue ?: barcode.displayValue
                     if (!raw.isNullOrBlank()) {
                         onSuccess(raw)
+                        found = true
                         break
                     }
                 }
+                if (!found) {
+                    tryZxingFallback(imageProxy, onSuccess)
+                }
+            }
+            .addOnFailureListener {
+                tryZxingFallback(imageProxy, onSuccess)
             }
             .addOnCompleteListener {
                 imageProxy.close()
             }
     } else {
         imageProxy.close()
+    }
+}
+
+private fun tryZxingFallback(imageProxy: ImageProxy, onSuccess: (String) -> Unit) {
+    try {
+        val plane = imageProxy.planes.firstOrNull() ?: return
+        val buffer = plane.buffer.duplicate()
+        val bytes = ByteArray(buffer.remaining())
+        buffer.get(bytes)
+        val width = imageProxy.width
+        val height = imageProxy.height
+        val source = PlanarYUVLuminanceSource(
+            bytes, width, height, 0, 0, width, height, false
+        )
+        val binaryBitmap = BinaryBitmap(HybridBinarizer(source))
+        val reader = MultiFormatReader().apply {
+            val hints = mapOf(
+                DecodeHintType.POSSIBLE_FORMATS to listOf(com.google.zxing.BarcodeFormat.QR_CODE),
+                DecodeHintType.TRY_HARDER to java.lang.Boolean.TRUE
+            )
+            setHints(hints)
+        }
+        val result = reader.decodeWithState(binaryBitmap)
+        if (!result.text.isNullOrBlank()) {
+            onSuccess(result.text)
+        }
+    } catch (_: Exception) {
+        // ZXing frame decode skipped
     }
 }

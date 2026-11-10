@@ -1,0 +1,106 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "urban_zone",
+        "name": "Greater Guwahati Metropolitan Area"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [91.62, 26.10],
+            [91.68, 26.08],
+            [91.78, 26.09],
+            [91.86, 26.12],
+            [91.88, 26.17],
+            [91.84, 26.21],
+            [91.75, 26.22],
+            [91.65, 26.20],
+            [91.62, 26.15],
+            [91.62, 26.10]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "water",
+        "name": "Brahmaputra River"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [91.58, 26.17],
+            [91.66, 26.16],
+            [91.73, 26.19],
+            [91.78, 26.20],
+            [91.85, 26.23],
+            [91.92, 26.25],
+            [91.92, 26.29],
+            [91.83, 26.26],
+            [91.74, 26.23],
+            [91.67, 26.20],
+            [91.58, 26.22],
+            [91.58, 26.17]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "highway",
+        "name": "NH 27 Southern Bypass"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [91.63, 26.13],
+          [91.68, 26.11],
+          [91.74, 26.11],
+          [91.77, 26.11],
+          [91.82, 26.13],
+          [91.87, 26.16]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "arterial",
+        "name": "GS Road Corridor"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [91.75, 26.18],
+          [91.76, 26.16],
+          [91.77, 26.15],
+          [91.79, 26.14],
+          [91.82, 26.13]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "arterial",
+        "name": "MG Road (Riverfront)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [91.71, 26.17],
+          [91.73, 26.18],
+          [91.75, 26.19],
+          [91.78, 26.19]
+        ]
+      }
+    }
+  ]
+}
