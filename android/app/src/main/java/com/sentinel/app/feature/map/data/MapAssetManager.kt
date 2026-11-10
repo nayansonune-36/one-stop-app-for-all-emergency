@@ -2,44 +2,243 @@ package com.sentinel.app.feature.map.data
 
 import android.content.Context
 import android.util.Log
+import com.sentinel.app.feature.map.tiles.LocalTileServer
+import org.maplibre.android.offline.OfflineManager
 import java.io.File
 import java.io.FileOutputStream
 
 class MapAssetManager(private val context: Context) {
 
+    private val localTileServer = LocalTileServer.getInstance(context)
+
     /**
-     * Prepares offline map storage on first launch.
-     * If an MBTiles bundle (e.g. guwahati.mbtiles) is bundled in assets/map,
-     * copies it to the app's internal filesDir/map/ directory.
+     * Builds and returns the complete hybrid MapLibre style JSON string.
+     * Integrates the embedded LocalTileServer (for Home Pack, Live Vector Tiles, and Base India)
+     * as well as the inlined offline vector basemap fallback.
+     */
+    fun getOfflineStyleJson(): String {
+        val serverPort = localTileServer.start()
+        val tileUrlTemplate = localTileServer.getTileUrlTemplate()
+
+        val geoJsonContent = try {
+            val stream = try {
+                context.assets.open("map/india_basemap.geojson")
+            } catch (_: Exception) {
+                context.assets.open("map/guwahati_basemap.geojson")
+            }
+            stream.bufferedReader().use { it.readText() }.trim()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error reading basemap GeoJSON from assets: ${e.message}")
+            "{\"type\":\"FeatureCollection\",\"features\":[]}"
+        }
+
+        return generateStyleJson(tileUrlTemplate, geoJsonContent)
+    }
+
+    /**
+     * Prepares offline map storage, copies demo packs, starts the local tile server,
+     * and sets MapLibre's ambient cache size limit.
      */
     fun prepareOfflineStorage(): String {
-        val mapDir = File(context.filesDir, "map")
-        if (!mapDir.exists()) {
-            mapDir.mkdirs()
-        }
+        val mapsDir = File(context.filesDir, "maps")
+        if (!mapsDir.exists()) mapsDir.mkdirs()
 
-        val mbtilesDestination = File(mapDir, "guwahati.mbtiles")
+        // 1. Configure MapLibre ambient cache size limit (100 MB)
         try {
-            val assetList = context.assets.list("map") ?: emptyArray()
-            if (assetList.contains("guwahati.mbtiles") && !mbtilesDestination.exists()) {
-                Log.i(TAG, "Copying offline MBTiles package from assets to internal storage...")
-                context.assets.open("map/guwahati.mbtiles").use { input ->
-                    FileOutputStream(mbtilesDestination).use { output ->
-                        input.copyTo(output)
+            OfflineManager.getInstance(context).setMaximumAmbientCacheSize(
+                100L * 1024 * 1024,
+                object : OfflineManager.FileSourceCallback {
+                    override fun onSuccess() {
+                        Log.i(TAG, "Configured MapLibre ambient cache size limit to 100 MB")
+                    }
+                    override fun onError(message: String) {
+                        Log.w(TAG, "Could not set ambient cache size: $message")
                     }
                 }
-                Log.i(TAG, "Offline MBTiles copied successfully: ${mbtilesDestination.absolutePath}")
-            }
+            )
         } catch (e: Exception) {
-            Log.w(TAG, "No pre-bundled MBTiles found or error copying: ${e.message}")
+            Log.w(TAG, "Could not set ambient cache size: ${e.message}")
         }
 
-        // Return asset style path (loaded directly by MapLibre Native)
-        return "asset://map/offline_style.json"
+        // 2. Copy bundled demo packs if available (guwahati.mbtiles / guwahati.pmtiles)
+        val homePackDestination = File(mapsDir, "home_pack.mbtiles")
+        if (!homePackDestination.exists()) {
+            copyAssetIfExists("maps/guwahati.mbtiles", homePackDestination) ||
+            copyAssetIfExists("map/guwahati.mbtiles", homePackDestination) ||
+            copyAssetIfExists("maps/guwahati.pmtiles", File(mapsDir, "home_pack.pmtiles"))
+        }
+
+        // 3. Copy bundled base india map if available (india_base.mbtiles / india_base.pmtiles)
+        val baseDestination = File(mapsDir, "india_base.mbtiles")
+        if (!baseDestination.exists()) {
+            copyAssetIfExists("maps/india_base.mbtiles", baseDestination) ||
+            copyAssetIfExists("map/india_base.mbtiles", baseDestination) ||
+            copyAssetIfExists("maps/india_base.pmtiles", File(mapsDir, "india_base.pmtiles"))
+        }
+
+        // 4. Reload readers in tile server
+        localTileServer.reloadReaders()
+
+        return getOfflineStyleJson()
+    }
+
+    private fun copyAssetIfExists(assetPath: String, destination: File): Boolean {
+        return try {
+            context.assets.open(assetPath).use { input ->
+                FileOutputStream(destination).use { output ->
+                    input.copyTo(output)
+                }
+            }
+            Log.i(TAG, "Copied bundled asset $assetPath to ${destination.absolutePath}")
+            true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    /**
+     * Generates a complete MapLibre GL style JSON containing dark offline theme,
+     * local vector tile source, and inlined GeoJSON basemap source.
+     */
+    private fun generateStyleJson(tileUrlTemplate: String, inlineGeoJson: String): String {
+        return """
+{
+  "version": 8,
+  "name": "SENTINEL Hybrid Dark",
+  "metadata": {
+    "maplibre:autogenerated": false
+  },
+  "center": [91.75, 26.15],
+  "zoom": 11,
+  "sources": {
+    "local_hybrid_vector": {
+      "type": "vector",
+      "tiles": [ "$tileUrlTemplate" ],
+      "minzoom": 0,
+      "maxzoom": 15
+    },
+    "sentinel_basemap": {
+      "type": "geojson",
+      "data": $inlineGeoJson
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#0B1220"
+      }
+    },
+    {
+      "id": "india_landmass",
+      "type": "fill",
+      "source": "sentinel_basemap",
+      "filter": ["==", "kind", "landmass"],
+      "paint": {
+        "fill-color": "#0F1A2E",
+        "fill-opacity": 0.95
+      }
+    },
+    {
+      "id": "india_landmass_stroke",
+      "type": "line",
+      "source": "sentinel_basemap",
+      "filter": ["==", "kind", "landmass"],
+      "paint": {
+        "line-color": "#1E3048",
+        "line-width": 1.5
+      }
+    },
+    {
+      "id": "regional_zones",
+      "type": "fill",
+      "source": "sentinel_basemap",
+      "filter": ["==", "kind", "region_zone"],
+      "paint": {
+        "fill-color": "#14243C",
+        "fill-opacity": 0.8
+      }
+    },
+    {
+      "id": "regional_zones_stroke",
+      "type": "line",
+      "source": "sentinel_basemap",
+      "filter": ["==", "kind", "region_zone"],
+      "paint": {
+        "line-color": "#2563EB",
+        "line-width": 1.5,
+        "line-dasharray": [3, 2]
+      }
+    },
+    {
+      "id": "urban_zones",
+      "type": "fill",
+      "source": "sentinel_basemap",
+      "filter": ["==", "kind", "urban_zone"],
+      "paint": {
+        "fill-color": "#1A2E4C",
+        "fill-opacity": 0.85
+      }
+    },
+    {
+      "id": "urban_zones_stroke",
+      "type": "line",
+      "source": "sentinel_basemap",
+      "filter": ["==", "kind", "urban_zone"],
+      "paint": {
+        "line-color": "#3B82F6",
+        "line-width": 1.8
+      }
+    },
+    {
+      "id": "water_polygons",
+      "type": "fill",
+      "source": "sentinel_basemap",
+      "filter": ["==", "kind", "water"],
+      "paint": {
+        "fill-color": "#0284C7",
+        "fill-opacity": 0.6
+      }
+    },
+    {
+      "id": "water_corridors",
+      "type": "line",
+      "source": "sentinel_basemap",
+      "filter": ["==", "kind", "water_line"],
+      "paint": {
+        "line-color": "#38BDF8",
+        "line-width": 2.5
+      }
+    },
+    {
+      "id": "emergency_highways",
+      "type": "line",
+      "source": "sentinel_basemap",
+      "filter": ["==", "kind", "highway"],
+      "paint": {
+        "line-color": "#F59E0B",
+        "line-width": 2.8
+      }
+    },
+    {
+      "id": "city_arterials",
+      "type": "line",
+      "source": "sentinel_basemap",
+      "filter": ["==", "kind", "arterial"],
+      "paint": {
+        "line-color": "#64748B",
+        "line-width": 2.0
+      }
+    }
+  ]
+}
+        """.trimIndent()
     }
 
     companion object {
         private const val TAG = "MapAssetManager"
         const val OFFLINE_STYLE_ASSET = "asset://map/offline_style.json"
+        const val OPENFREEMAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty"
     }
 }

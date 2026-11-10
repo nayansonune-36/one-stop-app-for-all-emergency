@@ -49,31 +49,45 @@
 
     <!-- Map Screen -->
     <string name="screen_map_title">Emergency Map &amp; Shelters</string>
-    <string name="screen_map_placeholder">Offline map viewer and nearby shelter points of interest will be rendered here. Verified data from /data/shelters.json will be loaded.</string>
+    <string name="screen_map_placeholder">Offline map viewer and nearby shelter points of interest are rendered here from local sample data.</string>
     <string name="map_nearest_title">Nearest Emergency Facility</string>
     <string name="map_nearest_calculating">Calculating nearest facility…</string>
+    <string name="map_nearest_none_found">No shelter found near you yet</string>
+    <string name="map_badge_approximate">Approximate location</string>
     <string name="map_location_unavailable">GPS location unavailable</string>
+    <string name="map_locating_you">Locating your position…</string>
     <string name="map_distance_km">%1$.1f km away</string>
     <string name="map_tap_to_view">Tap to focus</string>
     <string name="map_no_shelters_match">No shelters match this filter</string>
-    <string name="map_offline_mode_active">Offline Basemap (Guwahati Bounding Box)</string>
+    <string name="map_offline_mode_active">Offline Basemap</string>
+    <string name="map_status_home_ready">Home area: offline ready</string>
+    <string name="map_status_downloading">Downloading home area %1$d%%</string>
+    <string name="map_status_online">Online map</string>
+    <string name="map_status_offline_coarse">Offline: limited detail here</string>
+    <string name="map_offline_unavailable_title">Detailed map unavailable offline here</string>
+    <string name="map_offline_unavailable_desc">Showing bundled coarse base map. Streets and high-detail offline maps are saved for your Home Area (%1$s). Connect to internet to stream live tiles here.</string>
     <string name="map_permission_rationale">Enable location to view your position and calculate distances to emergency shelters.</string>
     <string name="map_permission_grant">Enable Location</string>
-    <string name="map_empty_title">No Verified Shelters Found</string>
-    <string name="map_empty_desc">The offline shelter registry (/data/shelters.json) is currently unpopulated. Add verified emergency POIs to display them here.</string>
+    <string name="map_empty_title">No Shelters Found</string>
+    <string name="map_empty_desc">The offline shelter registry is currently unpopulated.</string>
+    <string name="map_cluster_title">Shelters at this location (%1$d)</string>
 
     <!-- Map Filter & Legend -->
     <string name="shelter_filter_all">All</string>
     <string name="shelter_type_shelter">Shelter</string>
     <string name="shelter_type_hospital">Hospital</string>
     <string name="shelter_type_relief_camp">Relief Camp</string>
+    <string name="shelter_label_control_room">District control room</string>
+    <string name="map_region_all">All</string>
 
     <!-- Map Shelter Detail Bottom Sheet -->
     <string name="map_sheet_type_label">Facility Type</string>
     <string name="map_sheet_address_label">Address</string>
+    <string name="map_sheet_state_label">State: %1$s</string>
+    <string name="map_sheet_notes_label">Notes</string>
     <string name="map_sheet_capacity_format">Capacity: %1$d people</string>
     <string name="map_sheet_capacity_unknown">Capacity: Unknown</string>
-    <string name="map_sheet_verified_format">Verified: %1$s</string>
+    <string name="map_sheet_verified_format">Ingested: %1$s</string>
     <string name="map_sheet_call_button">Call Facility</string>
     <string name="map_sheet_no_phone">No phone number available</string>
     <string name="map_sheet_focus">Focus on Map</string>
@@ -123,6 +137,8 @@
     <string name="medical_val_invalid_age">Please enter a valid age (0–130).</string>
     <string name="medical_val_invalid_phone">Please enter a valid phone number.</string>
     <string name="medical_blood_dropdown_label">Select blood group</string>
+    <string name="medical_qr_profile_empty_error">Please fill in and save your Medical ID details first before generating an Emergency QR code.</string>
+    <string name="qr_encoded_summary_title">Information encoded in this QR code:</string>
     <string name="medical_btn_show_qr">Show QR Code</string>
     <string name="medical_btn_show_qr_fullscreen">Show Emergency QR (Full Screen)</string>
     <string name="qr_modal_title">Emergency Medical ID</string>
@@ -161,6 +177,7 @@
     <string name="bot_persistent_disclaimer">AI triage guidance only. In life-threatening emergencies, call 112 / 108 immediately.</string>
     <string name="bot_input_placeholder">Describe the emergency situation…</string>
     <string name="bot_send_button">Send</string>
+    <string name="bot_connection_error">Connection error to triage service. Please try again.</string>
     <string name="bot_initial_greeting">I can help you find the right first-aid steps. What is happening?</string>
     <string name="bot_suggested_1">Severe bleeding on arm</string>
     <string name="bot_suggested_2">Person is choking</string>
@@ -313,4 +330,46 @@
     <string name="debug_empty_log">No packet activity recorded</string>
     <string name="debug_close_button">Close Diagnostics</string>
     <string name="debug_long_press_hint">Long-press title for mesh diagnostics</string>
+
+    <!-- Offline Maps & Home Zone -->
+    <string name="settings_offline_maps_title">Offline maps</string>
+    <string name="settings_offline_maps_sub">Home area downloads &amp; storage</string>
+    <string name="offline_maps_screen_title">Offline Maps</string>
+    <string name="offline_maps_home_zone_header">Home Area</string>
+    <string name="offline_maps_home_zone_desc">High-resolution vector tiles (up to zoom 15) and shelters for your home area are saved permanently for offline emergencies.</string>
+    <string name="offline_maps_pack_size_label">Home pack size</string>
+    <string name="offline_maps_storage_used_label">Storage used</string>
+    <string name="offline_maps_status_label">Download status</string>
+    <string name="offline_maps_status_not_configured">Not downloaded</string>
+    <string name="offline_maps_status_downloading">Downloading (%1$d%%)…</string>
+    <string name="offline_maps_status_ready">Offline ready</string>
+    <string name="offline_maps_status_failed">Download failed</string>
+    <string name="offline_maps_redownload_button">Re-download Home Pack</string>
+    <string name="offline_maps_change_zone_button">Change Home Area</string>
+    <string name="offline_maps_delete_button">Delete Home Pack</string>
+    <string name="offline_maps_allow_mobile_title">Download over mobile data</string>
+    <string name="offline_maps_allow_mobile_desc">Allow downloading offline map packs over mobile cellular network</string>
+    <string name="offline_maps_storage_info">%1$.1f MB used • %2$.1f MB free</string>
+    <string name="offline_maps_delete_confirm_title">Delete Home Pack?</string>
+    <string name="offline_maps_delete_confirm_desc">This will delete the local offline street maps for your home area. You will only see the coarse base map when offline.</string>
+    <string name="offline_maps_delete_confirm_btn">Delete</string>
+
+    <!-- Onboarding Home Area Step -->
+    <string name="onboarding_home_zone_title">Choose your home area</string>
+    <string name="onboarding_home_zone_desc">Select where you live or operate. Streets, landmarks, and shelters for this area will be saved offline on your phone.</string>
+    <string name="onboarding_home_zone_search_hint">Search city or state…</string>
+    <string name="onboarding_home_zone_use_gps">Use current location</string>
+    <string name="onboarding_home_zone_radius_label">Coverage radius: %1$.0f km</string>
+    <string name="onboarding_home_zone_confirm">Save Home Area</string>
+    <string name="onboarding_home_zone_saved">Home area configured: %1$s</string>
+
+    <!-- Home Pack Notifications -->
+    <string name="home_pack_channel_name">Offline Map Downloads</string>
+    <string name="home_pack_channel_desc">Progress notifications for offline map pack downloads</string>
+    <string name="home_pack_downloading_title">Downloading %1$s offline map</string>
+    <string name="home_pack_downloading_progress">%1$d%% downloaded</string>
+    <string name="home_pack_ready_title">Home area: offline ready</string>
+    <string name="home_pack_ready_desc">Offline map pack for %1$s is ready to use without internet.</string>
+    <string name="home_pack_failed_title">Download failed for %1$s</string>
+    <string name="home_pack_storage_warning">Insufficient storage: %1$d MB free, need at least 100 MB.</string>
 </resources>

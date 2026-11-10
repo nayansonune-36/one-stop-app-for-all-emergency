@@ -99,11 +99,8 @@ class BotViewModel(
                     )
                 }
             }.onFailure { error ->
-                val errorMsg = if (lang == "hi") {
-                    "सर्वर से जुड़ने में त्रुटि हुई। कृपया पुनः प्रयास करें।"
-                } else {
-                    "Connection error to triage service. Please try again."
-                }
+                val errorMsg = error.message?.takeIf { it.isNotBlank() && !it.startsWith("HTTP") }
+                    ?: context.getString(R.string.bot_connection_error)
                 val assistantMessage = ChatMessage(
                     role = "assistant",
                     content = errorMsg,

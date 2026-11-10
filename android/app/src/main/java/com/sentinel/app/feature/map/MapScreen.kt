@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Bundle
 import android.os.Looper
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,23 +23,25 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.HolidayVillage
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
@@ -76,7 +77,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import android.location.LocationListener
+import android.location.LocationManager
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -119,6 +124,7 @@ fun MapScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     var maplibreMapInstance by remember { mutableStateOf<MapLibreMap?>(null) }
+    var mapStyleLoaded by remember { mutableStateOf(false) }
     var activeMarkers by remember { mutableStateOf<List<Marker>>(emptyList()) }
     var userLocationMarker by remember { mutableStateOf<Marker?>(null) }
 
@@ -136,7 +142,9 @@ fun MapScreen(
         viewModel.onLocationPermissionChanged(granted)
     }
 
-    // Initial check for location permission
+    var hasCenteredOnUser by remember { mutableStateOf(false) }
+
+    // Initial check for location permission and request if needed
     LaunchedEffect(Unit) {
         val hasFine = ContextCompat.checkSelfPermission(
             context,
@@ -148,7 +156,6 @@ fun MapScreen(
         ) == PackageManager.PERMISSION_GRANTED
         val granted = hasFine || hasCoarse
         viewModel.onLocationPermissionChanged(granted)
-
         if (!granted) {
             locationPermissionLauncher.launch(
                 arrayOf(
@@ -159,65 +166,165 @@ fun MapScreen(
         }
     }
 
-    // Location updates listener via FusedLocationProviderClient
+    // Listen for GPS location updates via FusedLocationProviderClient with LocationManager fallback
     DisposableEffect(uiState.hasLocationPermission) {
         var fusedLocationClient: FusedLocationProviderClient? = null
         var locationCallback: LocationCallback? = null
+        var locationManager: LocationManager? = null
+        var locationListener: LocationListener? = null
 
         if (uiState.hasLocationPermission) {
+            // 1. Google Play Services Fused Location Client
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+            locationCallback = object : LocationCallback() {
+                override fun onLocationResult(result: LocationResult) {
+                    val last = result.lastLocation ?: return
+                    viewModel.onLocationUpdated(last.latitude, last.longitude)
+                }
+            }
+
+            // High accuracy for fast satellite GPS acquisition offline
+            val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 3000L)
+                .setMinUpdateIntervalMillis(1500L)
+                .setMinUpdateDistanceMeters(0f)
+                .build()
+
             try {
+                // Immediate last known cached location
                 fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
                     if (loc != null) {
                         viewModel.onLocationUpdated(loc.latitude, loc.longitude)
                     }
                 }
-
-                val locationRequest = LocationRequest.Builder(
-                    Priority.PRIORITY_BALANCED_POWER_ACCURACY,
-                    10000L
-                ).setMinUpdateIntervalMillis(5000L).build()
-
-                locationCallback = object : LocationCallback() {
-                    override fun onLocationResult(result: LocationResult) {
-                        result.lastLocation?.let { loc ->
+                fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+                    .addOnSuccessListener { loc ->
+                        if (loc != null) {
                             viewModel.onLocationUpdated(loc.latitude, loc.longitude)
                         }
                     }
-                }
 
                 fusedLocationClient.requestLocationUpdates(
                     locationRequest,
                     locationCallback,
                     Looper.getMainLooper()
                 )
-            } catch (e: SecurityException) {
-                viewModel.onLocationPermissionChanged(false)
+            } catch (_: SecurityException) {}
+
+            // 2. Direct Android LocationManager fallback (100% offline, satellite-native)
+            locationManager = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
+            if (locationManager != null) {
+                try {
+                    val lastGps = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                    val lastNet = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+                    val lastPassive = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
+                    val best = lastGps ?: lastNet ?: lastPassive
+                    if (best != null) {
+                        viewModel.onLocationUpdated(best.latitude, best.longitude)
+                    }
+
+                    locationListener = LocationListener { loc ->
+                        viewModel.onLocationUpdated(loc.latitude, loc.longitude)
+                    }
+
+                    if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                        locationManager.requestLocationUpdates(
+                            LocationManager.GPS_PROVIDER,
+                            2000L,
+                            0f,
+                            locationListener,
+                            Looper.getMainLooper()
+                        )
+                    }
+                    if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                        locationManager.requestLocationUpdates(
+                            LocationManager.NETWORK_PROVIDER,
+                            3000L,
+                            0f,
+                            locationListener,
+                            Looper.getMainLooper()
+                        )
+                    }
+                } catch (_: SecurityException) {}
             }
         }
 
         onDispose {
             locationCallback?.let { fusedLocationClient?.removeLocationUpdates(it) }
+            locationListener?.let { locationManager?.removeUpdates(it) }
         }
     }
 
-    // Update map markers when filteredShelters or userLocation changes
-    LaunchedEffect(maplibreMapInstance, uiState.filteredShelters, uiState.userLocation) {
+    // Auto-center camera on user location when acquired for the first time
+    // Zoom level: 12.0 when near a shelter region; otherwise stay on Guwahati at zoom 12.0 (never all-India zoom)
+    LaunchedEffect(uiState.userLocation, maplibreMapInstance, mapStyleLoaded) {
+        val userLoc = uiState.userLocation ?: return@LaunchedEffect
+        val map = maplibreMapInstance ?: return@LaunchedEffect
+        if (!hasCenteredOnUser && mapStyleLoaded) {
+            val isNearShelter = uiState.allShelters.any { s ->
+                com.sentinel.app.feature.map.util.GeoUtils.calculateDistanceKm(userLoc.first, userLoc.second, s.lat, s.lon) <= 50.0
+            }
+            if (isNearShelter) {
+                hasCenteredOnUser = true
+                try {
+                    map.animateCamera(
+                        CameraUpdateFactory.newLatLngZoom(LatLng(userLoc.first, userLoc.second), 12.0),
+                        1000
+                    )
+                } catch (_: Exception) {
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(userLoc.first, userLoc.second), 12.0))
+                }
+            }
+        }
+    }
+
+    // Handle programmatic camera moves (e.g. region chip selection)
+    LaunchedEffect(uiState.cameraMoveEvent) {
+        val move = uiState.cameraMoveEvent ?: return@LaunchedEffect
+        val map = maplibreMapInstance ?: return@LaunchedEffect
+        val (coords, zoom) = move
+        val (lat, lon) = coords
+        try {
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lon), zoom), 800)
+        } catch (_: Exception) {
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lon), zoom))
+        }
+        viewModel.onCameraMoveHandled()
+    }
+
+    // Update map markers with clustering for overlapping points
+    // Gate on mapStyleLoaded to ensure markers are only added after the style is fully loaded.
+    LaunchedEffect(mapStyleLoaded, maplibreMapInstance, uiState.filteredShelters, uiState.userLocation) {
+        if (!mapStyleLoaded) return@LaunchedEffect
         val map = maplibreMapInstance ?: return@LaunchedEffect
 
-        // Clear existing shelter markers
+        // Clear existing markers
         activeMarkers.forEach { map.removeMarker(it) }
         userLocationMarker?.let { map.removeMarker(it) }
 
-        // Add shelter markers
+        // Group filtered shelters by exact coordinate to cluster overlapping points
+        val grouped = uiState.filteredShelters.groupBy { Pair(it.lat, it.lon) }
         val newMarkers = mutableListOf<Marker>()
-        for (shelter in uiState.filteredShelters) {
-            val icon = MarkerIconGenerator.createShelterIcon(context, shelter.shelterType)
-            val markerOptions = MarkerOptions()
-                .position(LatLng(shelter.lat, shelter.lon))
-                .title(shelter.id)
-                .snippet(shelter.type)
-                .icon(icon)
+
+        for ((coords, sheltersAtLoc) in grouped) {
+            val (lat, lon) = coords
+            val markerOptions: MarkerOptions = if (sheltersAtLoc.size == 1) {
+                val shelter = sheltersAtLoc.first()
+                val icon = MarkerIconGenerator.createShelterIcon(context, shelter.shelterType, shelter.isApproximate)
+                MarkerOptions()
+                    .position(LatLng(lat, lon))
+                    .title("shelter_${shelter.id}")
+                    .snippet(shelter.type)
+                    .icon(icon)
+            } else {
+                // Cluster marker for co-located shelters
+                val isApprox = sheltersAtLoc.any { it.isApproximate }
+                val clusterIcon = MarkerIconGenerator.createClusterIcon(context, sheltersAtLoc.size, isApprox)
+                MarkerOptions()
+                    .position(LatLng(lat, lon))
+                    .title("cluster_${lat}_${lon}")
+                    .snippet("cluster_${sheltersAtLoc.size}")
+                    .icon(clusterIcon)
+            }
 
             val added = map.addMarker(markerOptions)
             newMarkers.add(added)
@@ -235,34 +342,125 @@ fun MapScreen(
         }
     }
 
+    // Remember MapView with explicit lifecycle start & resume so touch gestures,
+    // render loop, and gesture detectors are active from initial render.
+    val mapView = remember {
+        MapLibre.getInstance(context)
+        MapView(context).apply {
+            onCreate(null)
+            onStart()
+            onResume()
+        }
+    }
+
+    // Bind Android Lifecycle to MapView for foreground/background transitions
+    DisposableEffect(lifecycleOwner, mapView) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> mapView.onStart()
+                Lifecycle.Event.ON_RESUME -> mapView.onResume()
+                Lifecycle.Event.ON_PAUSE -> mapView.onPause()
+                Lifecycle.Event.ON_STOP -> mapView.onStop()
+                Lifecycle.Event.ON_DESTROY -> mapView.onDestroy()
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            try {
+                mapView.onPause()
+                mapView.onStop()
+                mapView.onDestroy()
+            } catch (_: Exception) {}
+        }
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         // MapLibre MapView Host
         AndroidView(
-            factory = { ctx ->
-                MapLibre.getInstance(ctx)
-                MapView(ctx).apply {
-                    onCreate(null)
+            factory = {
+                mapView.apply {
                     getMapAsync { map ->
                         maplibreMapInstance = map
 
-                        // Load strictly offline local style
-                        map.setStyle(Style.Builder().fromUri(uiState.mapStyleUrl)) { _ ->
-                            // Center camera on Guwahati metropolitan region
-                            map.cameraPosition = CameraPosition.Builder()
-                                .target(LatLng(26.15, 26.15))
-                                .target(LatLng(26.15, 91.75))
-                                .zoom(11.2)
-                                .build()
+                        // Explicitly enable gestures for panning, zooming, rotation
+                        map.uiSettings.apply {
+                            isScrollGesturesEnabled = true
+                            isZoomGesturesEnabled = true
+                            isDoubleTapGesturesEnabled = true
+                            isQuickZoomGesturesEnabled = true
+                            isRotateGesturesEnabled = true
+                            isTiltGesturesEnabled = false
+                            isCompassEnabled = false
+                            isAttributionEnabled = false
+                            isLogoEnabled = false
+                        }
+
+                        fun onStyleSuccessfullyLoaded() {
+                            mapStyleLoaded = true
+                            // Initial camera placement: Guwahati at zoom 12.0 when outside shelter region or unavailable
+                            val userLoc = uiState.userLocation
+                            val isNearShelter = userLoc != null && uiState.allShelters.any { s ->
+                                com.sentinel.app.feature.map.util.GeoUtils.calculateDistanceKm(userLoc.first, userLoc.second, s.lat, s.lon) <= 50.0
+                            }
+                            val targetCenter = if (isNearShelter && userLoc != null) {
+                                hasCenteredOnUser = true
+                                LatLng(userLoc.first, userLoc.second)
+                            } else {
+                                LatLng(26.1445, 91.7362)
+                            }
+                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(targetCenter, 12.0))
+                        }
+
+                        fun loadFallbackOfflineStyle() {
+                            val fallbackJson = if (uiState.mapStyleJson.isNotBlank()) {
+                                uiState.mapStyleJson
+                            } else {
+                                "{\"version\":8,\"name\":\"SentinelFallback\",\"sources\":{},\"layers\":[{\"id\":\"bg\",\"type\":\"background\",\"paint\":{\"background-color\":\"#0B1220\"}}]}"
+                            }
+                            try {
+                                map.setStyle(Style.Builder().fromJson(fallbackJson)) { _ ->
+                                    onStyleSuccessfullyLoaded()
+                                }
+                            } catch (_: Exception) {
+                                mapStyleLoaded = true
+                            }
+                        }
+
+                        mapView.addOnDidFailLoadingMapListener { _ ->
+                            if (!mapStyleLoaded) {
+                                loadFallbackOfflineStyle()
+                            }
+                        }
+
+                        // Primary: OpenFreeMap Liberty style (no API key required)
+                        try {
+                            map.setStyle(Style.Builder().fromUri(com.sentinel.app.feature.map.data.MapAssetManager.OPENFREEMAP_STYLE_URL)) { _ ->
+                                onStyleSuccessfullyLoaded()
+                            }
+                        } catch (_: Exception) {
+                            loadFallbackOfflineStyle()
                         }
 
                         // Handle marker clicks
                         map.setOnMarkerClickListener { marker ->
-                            if (marker.title == "user_location") {
+                            val title = marker.title ?: return@setOnMarkerClickListener true
+                            if (title == "user_location") {
                                 return@setOnMarkerClickListener true
                             }
-                            val shelter = uiState.allShelters.firstOrNull { it.id == marker.title }
-                            if (shelter != null) {
-                                viewModel.onShelterSelected(shelter)
+
+                            if (title.startsWith("cluster_")) {
+                                val lat = marker.position.latitude
+                                val lon = marker.position.longitude
+                                val clusterShelters = uiState.filteredShelters.filter { it.lat == lat && it.lon == lon }
+                                viewModel.onClusterSelected(clusterShelters)
+                            } else if (title.startsWith("shelter_")) {
+                                val shelterId = title.removePrefix("shelter_")
+                                val shelter = uiState.allShelters.firstOrNull { it.id == shelterId }
+                                if (shelter != null) {
+                                    viewModel.onShelterSelected(shelter)
+                                }
                             }
                             true
                         }
@@ -272,27 +470,7 @@ fun MapScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Bind Android Lifecycle to MapView
-        val mapViewRef = remember { mutableStateOf<MapView?>(null) }
-        DisposableEffect(lifecycleOwner) {
-            val observer = LifecycleEventObserver { _, event ->
-                val mv = mapViewRef.value ?: return@LifecycleEventObserver
-                when (event) {
-                    Lifecycle.Event.ON_START -> mv.onStart()
-                    Lifecycle.Event.ON_RESUME -> mv.onResume()
-                    Lifecycle.Event.ON_PAUSE -> mv.onPause()
-                    Lifecycle.Event.ON_STOP -> mv.onStop()
-                    Lifecycle.Event.ON_DESTROY -> mv.onDestroy()
-                    else -> {}
-                }
-            }
-            lifecycleOwner.lifecycle.addObserver(observer)
-            onDispose {
-                lifecycleOwner.lifecycle.removeObserver(observer)
-            }
-        }
-
-        // Top Overlay: Nearest Shelter Card & Legend / Filter Chips
+        // Top Overlay: Nearest Shelter Card & Region/Type Filters
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -307,21 +485,37 @@ fun MapScreen(
                 isHindi = isHindi,
                 onCardClick = { shelter ->
                     viewModel.onShelterSelected(shelter)
-                    maplibreMapInstance?.animateCamera(
-                        CameraUpdateFactory.newLatLngZoom(LatLng(shelter.lat, shelter.lon), 14.5)
-                    )
+                    maplibreMapInstance?.let { map ->
+                        try {
+                            map.animateCamera(
+                                CameraUpdateFactory.newLatLngZoom(LatLng(shelter.lat, shelter.lon), 14.5),
+                                800
+                            )
+                        } catch (_: Exception) {
+                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(shelter.lat, shelter.lon), 14.5))
+                        }
+                    }
                 }
             )
 
             Spacer(modifier = Modifier.height(spacing.small))
 
-            // Marker Type Filters & Legend Row
-            FilterAndLegendRow(
-                selectedFilter = uiState.selectedTypeFilter,
-                onSelectFilter = { type -> viewModel.onFilterSelected(type) }
+            // State Region Filter Chips
+            RegionFilterRow(
+                availableStates = uiState.availableStates,
+                selectedState = uiState.selectedStateFilter,
+                onSelectState = { state -> viewModel.onStateFilterSelected(state) }
             )
 
-            // Permission rationale banner (if location permission is denied)
+            Spacer(modifier = Modifier.height(spacing.extraSmall))
+
+            // Marker Type Filters Row
+            TypeFilterRow(
+                selectedFilter = uiState.selectedTypeFilter,
+                onSelectFilter = { type -> viewModel.onTypeFilterSelected(type) }
+            )
+
+            // Location permission rationale banner
             if (!uiState.hasLocationPermission) {
                 Spacer(modifier = Modifier.height(spacing.small))
                 PermissionBanner(
@@ -335,23 +529,6 @@ fun MapScreen(
                     }
                 )
             }
-
-            Spacer(modifier = Modifier.height(spacing.extraSmall))
-
-            // Offline mode badge
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = DarkNavySurface.copy(alpha = 0.85f),
-                border = androidx.compose.foundation.BorderStroke(1.dp, DividerBorder),
-                modifier = Modifier.align(Alignment.Start)
-            ) {
-                Text(
-                    text = stringResource(R.string.map_offline_mode_active),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = TextMuted,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                )
-            }
         }
 
         // Empty state overlay if registry is empty
@@ -359,7 +536,7 @@ fun MapScreen(
             EmptyRegistryCard(modifier = Modifier.align(Alignment.Center))
         }
 
-        // Floating map controls (Zoom in, Zoom out, Recenter) - bottom right
+        // Floating map controls (Zoom in, Zoom out, Recenter)
         Column(
             modifier = Modifier
                 .padding(end = spacing.medium, bottom = 80.dp)
@@ -369,7 +546,15 @@ fun MapScreen(
         ) {
             // Zoom In (+)
             IconButton(
-                onClick = { maplibreMapInstance?.animateCamera(CameraUpdateFactory.zoomIn()) },
+                onClick = {
+                    maplibreMapInstance?.let { map ->
+                        try {
+                            map.animateCamera(CameraUpdateFactory.zoomIn(), 250)
+                        } catch (_: Exception) {
+                            map.moveCamera(CameraUpdateFactory.zoomIn())
+                        }
+                    }
+                },
                 modifier = Modifier
                     .size(44.dp)
                     .clip(RoundedCornerShape(12.dp))
@@ -385,7 +570,15 @@ fun MapScreen(
 
             // Zoom Out (-)
             IconButton(
-                onClick = { maplibreMapInstance?.animateCamera(CameraUpdateFactory.zoomOut()) },
+                onClick = {
+                    maplibreMapInstance?.let { map ->
+                        try {
+                            map.animateCamera(CameraUpdateFactory.zoomOut(), 250)
+                        } catch (_: Exception) {
+                            map.moveCamera(CameraUpdateFactory.zoomOut())
+                        }
+                    }
+                },
                 modifier = Modifier
                     .size(44.dp)
                     .clip(RoundedCornerShape(12.dp))
@@ -399,29 +592,58 @@ fun MapScreen(
                 )
             }
 
-            // Recenter on user button (when user location is available)
-            if (uiState.userLocation != null) {
-                IconButton(
-                    onClick = {
-                        uiState.userLocation?.let { (lat, lon) ->
-                            maplibreMapInstance?.animateCamera(
-                                CameraUpdateFactory.newLatLngZoom(LatLng(lat, lon), 14.0)
+            // Recenter on user button (Always accessible)
+            IconButton(
+                onClick = {
+                    if (!uiState.hasLocationPermission) {
+                        locationPermissionLauncher.launch(
+                            arrayOf(
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.ACCESS_COARSE_LOCATION
                             )
+                        )
+                    } else if (uiState.userLocation != null) {
+                        uiState.userLocation?.let { (lat, lon) ->
+                            maplibreMapInstance?.let { map ->
+                                val target = LatLng(lat, lon)
+                                try {
+                                    map.animateCamera(
+                                        CameraUpdateFactory.newLatLngZoom(target, 14.0),
+                                        800
+                                    )
+                                } catch (_: Exception) {
+                                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(target, 14.0))
+                                }
+                            }
                         }
-                    },
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.surface)
-                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.MyLocation,
-                        contentDescription = null,
-                        tint = RedPrimary
-                    )
-                }
+                    } else {
+                        Toast.makeText(context, context.getString(R.string.map_locating_you), Toast.LENGTH_SHORT).show()
+                    }
+                },
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MyLocation,
+                    contentDescription = stringResource(R.string.settings_perm_location_title),
+                    tint = if (uiState.userLocation != null) RedPrimary else TextMuted
+                )
             }
+        }
+
+        // Co-located Shelters Cluster Bottom Sheet
+        uiState.selectedCluster?.let { cluster ->
+            ClusterListBottomSheet(
+                shelters = cluster,
+                isHindi = isHindi,
+                onDismiss = { viewModel.onClusterSelected(null) },
+                onSelectShelter = { shelter ->
+                    viewModel.onShelterSelected(shelter)
+                }
+            )
         }
 
         // Shelter Details Bottom Sheet
@@ -431,15 +653,38 @@ fun MapScreen(
                 isHindi = isHindi,
                 onDismiss = { viewModel.onShelterSelected(null) },
                 onFocusOnMap = {
-                    maplibreMapInstance?.animateCamera(
-                        CameraUpdateFactory.newLatLngZoom(LatLng(selected.lat, selected.lon), 14.5)
-                    )
+                    maplibreMapInstance?.let { map ->
+                        try {
+                            map.animateCamera(
+                                CameraUpdateFactory.newLatLngZoom(LatLng(selected.lat, selected.lon), 14.5),
+                                800
+                            )
+                        } catch (_: Exception) {
+                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(selected.lat, selected.lon), 14.5))
+                        }
+                    }
                     viewModel.onShelterSelected(null)
                 },
                 onCallPhone = { phone ->
                     val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))
                     context.startActivity(intent)
                 }
+            )
+        }
+
+        // OpenFreeMap Attribution
+        Surface(
+            shape = RoundedCornerShape(topStart = 8.dp),
+            color = DarkNavySurface.copy(alpha = 0.85f),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 0.dp)
+        ) {
+            Text(
+                text = "OpenFreeMap | © OpenStreetMap contributors",
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                color = TextMuted,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
             )
         }
     }
@@ -513,7 +758,7 @@ private fun NearestShelterCard(
                     )
                 } else {
                     Text(
-                        text = stringResource(R.string.map_nearest_calculating),
+                        text = stringResource(R.string.map_nearest_none_found),
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextMuted
                     )
@@ -524,26 +769,27 @@ private fun NearestShelterCard(
 }
 
 @Composable
-private fun FilterAndLegendRow(
-    selectedFilter: ShelterType?,
-    onSelectFilter: (ShelterType?) -> Unit
+private fun RegionFilterRow(
+    availableStates: List<String>,
+    selectedState: String?,
+    onSelectState: (String?) -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(spacing.small)
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        // "All" filter chip
+        // "All" state chip
         FilterChip(
-            selected = selectedFilter == null,
-            onClick = { onSelectFilter(null) },
-            label = { Text(stringResource(R.string.shelter_filter_all)) },
+            selected = selectedState == null,
+            onClick = { onSelectState(null) },
+            label = { Text(stringResource(R.string.map_region_all)) },
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.Layers,
+                    imageVector = Icons.Default.Public,
                     contentDescription = null,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(14.dp)
                 )
             },
             colors = FilterChipDefaults.filterChipColors(
@@ -555,7 +801,54 @@ private fun FilterAndLegendRow(
             )
         )
 
-        // "Shelter" filter chip
+        // Dynamic State Chips
+        for (stateName in availableStates) {
+            FilterChip(
+                selected = selectedState.equals(stateName, ignoreCase = true),
+                onClick = { onSelectState(stateName) },
+                label = { Text(stateName) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = RedPrimary,
+                    selectedLabelColor = TextWhite,
+                    containerColor = DarkNavyCard,
+                    labelColor = TextWhite
+                )
+            )
+        }
+    }
+}
+
+@Composable
+private fun TypeFilterRow(
+    selectedFilter: ShelterType?,
+    onSelectFilter: (ShelterType?) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        FilterChip(
+            selected = selectedFilter == null,
+            onClick = { onSelectFilter(null) },
+            label = { Text(stringResource(R.string.shelter_filter_all)) },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Layers,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp)
+                )
+            },
+            colors = FilterChipDefaults.filterChipColors(
+                selectedContainerColor = DarkNavySurface,
+                selectedLabelColor = TextWhite,
+                selectedLeadingIconColor = TextWhite,
+                containerColor = DarkNavyCard,
+                labelColor = TextWhite
+            )
+        )
+
         FilterChip(
             selected = selectedFilter == ShelterType.SHELTER,
             onClick = {
@@ -568,7 +861,7 @@ private fun FilterAndLegendRow(
                     imageVector = Icons.Default.Home,
                     contentDescription = null,
                     tint = Color(0xFFFF9800),
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(14.dp)
                 )
             },
             colors = FilterChipDefaults.filterChipColors(
@@ -579,7 +872,6 @@ private fun FilterAndLegendRow(
             )
         )
 
-        // "Hospital" filter chip
         FilterChip(
             selected = selectedFilter == ShelterType.HOSPITAL,
             onClick = {
@@ -592,7 +884,7 @@ private fun FilterAndLegendRow(
                     imageVector = Icons.Default.LocalHospital,
                     contentDescription = null,
                     tint = RedPrimary,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(14.dp)
                 )
             },
             colors = FilterChipDefaults.filterChipColors(
@@ -603,7 +895,6 @@ private fun FilterAndLegendRow(
             )
         )
 
-        // "Relief Camp" filter chip
         FilterChip(
             selected = selectedFilter == ShelterType.RELIEF_CAMP,
             onClick = {
@@ -616,7 +907,7 @@ private fun FilterAndLegendRow(
                     imageVector = Icons.Default.HolidayVillage,
                     contentDescription = null,
                     tint = Color(0xFF00BCD4),
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(14.dp)
                 )
             },
             colors = FilterChipDefaults.filterChipColors(
@@ -711,6 +1002,112 @@ private fun EmptyRegistryCard(modifier: Modifier = Modifier) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+private fun ClusterListBottomSheet(
+    shelters: List<Shelter>,
+    isHindi: Boolean,
+    onDismiss: () -> Unit,
+    onSelectShelter: (Shelter) -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = DarkNavyCard,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = spacing.medium, vertical = spacing.medium)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = stringResource(R.string.map_cluster_title, shelters.size),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = TextWhite
+                )
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = stringResource(R.string.map_sheet_close),
+                        tint = TextMuted
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(spacing.small))
+
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(shelters, key = { it.id }) { shelter ->
+                    Card(
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = DarkNavySurface),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, DividerBorder),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onSelectShelter(shelter)
+                            }
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = shelter.localizedName(isHindi),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextWhite
+                                )
+                                Text(
+                                    text = shelter.address,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextMuted,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+
+                            if (shelter.isApproximate) {
+                                Spacer(modifier = Modifier.width(spacing.small))
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = Color(0xFFF59E0B).copy(alpha = 0.2f),
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF59E0B))
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.map_badge_approximate),
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                        color = Color(0xFFF59E0B),
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(spacing.large))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 private fun ShelterDetailBottomSheet(
     shelter: Shelter,
     isHindi: Boolean,
@@ -745,35 +1142,57 @@ private fun ShelterDetailBottomSheet(
                         color = TextWhite
                     )
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
-                    val (badgeText, badgeBg) = when (shelter.shelterType) {
-                        ShelterType.HOSPITAL -> Pair(
-                            stringResource(R.string.shelter_type_hospital),
-                            RedPrimary
-                        )
-                        ShelterType.RELIEF_CAMP -> Pair(
-                            stringResource(R.string.shelter_type_relief_camp),
-                            Color(0xFF00BCD4)
-                        )
-                        ShelterType.SHELTER -> Pair(
-                            stringResource(R.string.shelter_type_shelter),
-                            Color(0xFFFF9800)
-                        )
-                    }
-
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = badgeBg.copy(alpha = 0.2f),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, badgeBg)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = badgeText,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = badgeBg,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                        )
+                        val (badgeText, badgeBg) = when (shelter.shelterType) {
+                            ShelterType.HOSPITAL -> Pair(
+                                stringResource(R.string.shelter_type_hospital),
+                                RedPrimary
+                            )
+                            ShelterType.RELIEF_CAMP -> Pair(
+                                stringResource(R.string.shelter_type_relief_camp),
+                                Color(0xFF00BCD4)
+                            )
+                            ShelterType.SHELTER -> Pair(
+                                stringResource(R.string.shelter_type_shelter),
+                                Color(0xFFFF9800)
+                            )
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = badgeBg.copy(alpha = 0.2f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, badgeBg)
+                        ) {
+                            Text(
+                                text = badgeText,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = badgeBg,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                            )
+                        }
+
+                        // Approximate location badge
+                        if (shelter.isApproximate) {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = Color(0xFFF59E0B).copy(alpha = 0.2f),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF59E0B))
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.map_badge_approximate),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Color(0xFFF59E0B),
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -804,11 +1223,20 @@ private fun ShelterDetailBottomSheet(
                 )
             }
 
-            Spacer(modifier = Modifier.height(spacing.small))
+            // State (only if not blank)
+            if (shelter.state.isNotBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.map_sheet_state_label, shelter.state),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 28.dp)
+                )
+            }
 
             // Capacity (only if not null)
             if (shelter.capacity != null) {
-                Spacer(modifier = Modifier.height(spacing.small))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = stringResource(R.string.map_sheet_capacity_format, shelter.capacity),
                     style = MaterialTheme.typography.bodySmall,
@@ -817,15 +1245,70 @@ private fun ShelterDetailBottomSheet(
                 )
             }
 
-            // Verified date
-            if (shelter.verified.isNotBlank()) {
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = stringResource(R.string.map_sheet_verified_format, shelter.verified),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+            // Phone / Control Room Label (only if phone is not null)
+            if (!shelter.phone.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(spacing.small))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(start = 28.dp)
-                )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Call,
+                        contentDescription = null,
+                        tint = TextMuted,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = shelter.phone,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextWhite
+                    )
+                    if (shelter.isControlRoom) {
+                        Spacer(modifier = Modifier.width(spacing.small))
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = Color(0xFFEF4444).copy(alpha = 0.15f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.5f))
+                        ) {
+                            Text(
+                                text = stringResource(R.string.shelter_label_control_room),
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                color = Color(0xFFEF4444),
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Data Notes (in small text, only if present)
+            if (!shelter.dataNotes.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(spacing.small))
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = DarkNavySurface,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 28.dp)
+                ) {
+                    Column(modifier = Modifier.padding(8.dp)) {
+                        Text(
+                            text = stringResource(R.string.map_sheet_notes_label),
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                            color = TextMuted,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = shelter.dataNotes,
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                            color = TextMuted
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(spacing.large))
@@ -875,6 +1358,109 @@ private fun ShelterDetailBottomSheet(
             }
 
             Spacer(modifier = Modifier.height(spacing.large))
+        }
+    }
+}
+
+@Composable
+private fun MapStatusChip(
+    isOnline: Boolean,
+    isInsideHomeZone: Boolean,
+    homePackStatus: com.sentinel.app.core.maps.HomePackStatus,
+    homeZoneName: String
+) {
+    val (statusText, statusBg, statusColor) = when {
+        isInsideHomeZone && homePackStatus is com.sentinel.app.core.maps.HomePackStatus.Downloading -> {
+            Triple(
+                stringResource(R.string.map_status_downloading, homePackStatus.progressPercent),
+                Color(0xFF0284C7).copy(alpha = 0.2f),
+                Color(0xFF38BDF8)
+            )
+        }
+        isInsideHomeZone -> {
+            Triple(
+                stringResource(R.string.map_status_home_ready),
+                Color(0xFF10B981).copy(alpha = 0.2f),
+                Color(0xFF34D399)
+            )
+        }
+        isOnline -> {
+            Triple(
+                stringResource(R.string.map_status_online),
+                Color(0xFF3B82F6).copy(alpha = 0.2f),
+                Color(0xFF60A5FA)
+            )
+        }
+        else -> {
+            Triple(
+                stringResource(R.string.map_status_offline_coarse),
+                Color(0xFFF59E0B).copy(alpha = 0.2f),
+                Color(0xFFFBBF24)
+            )
+        }
+    }
+
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = DarkNavySurface.copy(alpha = 0.92f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, statusColor.copy(alpha = 0.5f))
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(statusColor)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = statusText,
+                style = MaterialTheme.typography.labelSmall,
+                color = TextWhite,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+}
+
+@Composable
+private fun DetailedMapUnavailableCard(homeZoneName: String) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = DarkNavySurface.copy(alpha = 0.95f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF59E0B).copy(alpha = 0.6f)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = null,
+                tint = Color(0xFFF59E0B),
+                modifier = Modifier
+                    .size(20.dp)
+                    .padding(top = 2.dp)
+            )
+            Spacer(modifier = Modifier.width(spacing.small))
+            Column {
+                Text(
+                    text = stringResource(R.string.map_offline_unavailable_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFF59E0B)
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = stringResource(R.string.map_offline_unavailable_desc, homeZoneName),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextMuted
+                )
+            }
         }
     }
 }

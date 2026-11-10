@@ -49,31 +49,45 @@
 
     <!-- Map Screen -->
     <string name="screen_map_title">आपातकालीन मानचित्र और आश्रय</string>
-    <string name="screen_map_placeholder">ऑफ़लाइन मानचित्र दर्शक और निकटतम आश्रय स्थल यहां प्रदर्शित होंगे। /data/shelters.json से सत्यापित डेटा लोड किया जाएगा।</string>
+    <string name="screen_map_placeholder">ऑफ़लाइन मानचित्र दर्शक और निकटतम आश्रय स्थल स्थानीय नमूना डेटा से यहां प्रदर्शित होंगे।</string>
     <string name="map_nearest_title">निकटतम आपातकालीन सुविधा</string>
     <string name="map_nearest_calculating">निकटतम सुविधा की गणना की जा रही है…</string>
+    <string name="map_nearest_none_found">आपके पास अभी कोई आश्रय नहीं मिला</string>
+    <string name="map_badge_approximate">अनुमानित स्थान</string>
     <string name="map_location_unavailable">जीपीएस स्थान अनुपलब्ध</string>
+    <string name="map_locating_you">आपकी स्थिति खोजी जा रही है…</string>
     <string name="map_distance_km">%1$.1f किमी दूर</string>
     <string name="map_tap_to_view">केंद्रित करने के लिए टैप करें</string>
     <string name="map_no_shelters_match">इस फ़िल्टर से मेल खाता कोई आश्रय नहीं</string>
-    <string name="map_offline_mode_active">ऑफ़लाइन बेस-मानचित्र (गुवाहाटी क्षेत्र)</string>
+    <string name="map_offline_mode_active">ऑफ़लाइन बेस-मानचित्र</string>
+    <string name="map_status_home_ready">गृह क्षेत्र: ऑफ़लाइन तैयार</string>
+    <string name="map_status_downloading">गृह क्षेत्र डाउनलोड हो रहा है %1$d%%</string>
+    <string name="map_status_online">ऑनलाइन मानचित्र</string>
+    <string name="map_status_offline_coarse">ऑफ़लाइन: यहाँ सीमित विवरण</string>
+    <string name="map_offline_unavailable_title">यहाँ विस्तृत मानचित्र ऑफ़लाइन अनुपलब्ध है</string>
+    <string name="map_offline_unavailable_desc">मोटा आधार मानचित्र दिखाया जा रहा है। आपके गृह क्षेत्र (%1$s) के लिए विस्तृत सड़कें और ऑफ़लाइन मानचित्र उपलब्ध हैं। यहाँ लाइव टाइल्स के लिए इंटरनेट से कनेक्ट करें।</string>
     <string name="map_permission_rationale">अपनी स्थिति देखने और आपातकालीन आश्रयों की दूरी की गणना करने के लिए स्थान अनुमति दें।</string>
     <string name="map_permission_grant">स्थान सक्षम करें</string>
-    <string name="map_empty_title">कोई सत्यापित आश्रय नहीं मिला</string>
-    <string name="map_empty_desc">ऑफ़लाइन आश्रय रजिस्ट्री (/data/shelters.json) वर्तमान में रिक्त है। उन्हें यहां प्रदर्शित करने के लिए सत्यापित आपातकालीन सुविधाएं जोड़ें।</string>
+    <string name="map_empty_title">कोई आश्रय नहीं मिला</string>
+    <string name="map_empty_desc">ऑफ़लाइन आश्रय रजिस्ट्री वर्तमान में रिक्त है।</string>
+    <string name="map_cluster_title">इस स्थान पर आश्रय स्थल (%1$d)</string>
 
     <!-- Map Filter & Legend -->
     <string name="shelter_filter_all">सभी</string>
     <string name="shelter_type_shelter">आश्रय</string>
     <string name="shelter_type_hospital">अस्पताल</string>
     <string name="shelter_type_relief_camp">राहत शिविर</string>
+    <string name="shelter_label_control_room">ज़िला नियंत्रण कक्ष</string>
+    <string name="map_region_all">सभी</string>
 
     <!-- Map Shelter Detail Bottom Sheet -->
     <string name="map_sheet_type_label">सुविधा का प्रकार</string>
     <string name="map_sheet_address_label">पता</string>
+    <string name="map_sheet_state_label">राज्य: %1$s</string>
+    <string name="map_sheet_notes_label">विवरण</string>
     <string name="map_sheet_capacity_format">क्षमता: %1$d लोग</string>
     <string name="map_sheet_capacity_unknown">क्षमता: अज्ञात</string>
-    <string name="map_sheet_verified_format">सत्यापित: %1$s</string>
+    <string name="map_sheet_verified_format">दर्ज तिथि: %1$s</string>
     <string name="map_sheet_call_button">सुविधा पर कॉल करें</string>
     <string name="map_sheet_no_phone">कोई फोन नंबर उपलब्ध नहीं है</string>
     <string name="map_sheet_focus">मानचित्र पर केंद्रित करें</string>
@@ -123,6 +137,8 @@
     <string name="medical_val_invalid_age">कृपया मान्य आयु (0–130) दर्ज करें।</string>
     <string name="medical_val_invalid_phone">कृपया एक मान्य फ़ोन नंबर दर्ज करें।</string>
     <string name="medical_blood_dropdown_label">रक्त समूह चुनें</string>
+    <string name="medical_qr_profile_empty_error">आपातकालीन QR कोड बनाने से पहले कृपया अपना चिकित्सीय विवरण भरें और सहेजें।</string>
+    <string name="qr_encoded_summary_title">इस QR कोड में एनकोड की गई जानकारी:</string>
     <string name="medical_btn_show_qr">क्यूआर कोड दिखाएं</string>
     <string name="medical_btn_show_qr_fullscreen">आपातकालीन क्यूआर दिखाएं (पूर्ण स्क्रीन)</string>
     <string name="qr_modal_title">आपातकालीन चिकित्सीय पहचान</string>
@@ -161,6 +177,7 @@
     <string name="bot_persistent_disclaimer">केवल एआई ट्राइएज मार्गदर्शन। जानलेवा आपात स्थिति में तुरंत 112 / 108 पर कॉल करें।</string>
     <string name="bot_input_placeholder">आपातकालीन स्थिति का वर्णन करें…</string>
     <string name="bot_send_button">भेजें</string>
+    <string name="bot_connection_error">सर्वर से जुड़ने में त्रुटि हुई। कृपया पुनः प्रयास करें।</string>
     <string name="bot_initial_greeting">मैं सही प्राथमिक उपचार कदम खोजने में आपकी सहायता कर सकता हूँ। क्या हो रहा है?</string>
     <string name="bot_suggested_1">हाथ से गहरा खून बह रहा है</string>
     <string name="bot_suggested_2">गले में कुछ अटक गया है</string>
@@ -313,4 +330,46 @@
     <string name="debug_empty_log">कोई पैकेट गतिविधि दर्ज नहीं हुई है</string>
     <string name="debug_close_button">डायग्नोस्टिक्स बंद करें</string>
     <string name="debug_long_press_hint">मेश डायग्नोस्टिक्स के लिए शीर्षक को देर तक दबाएं</string>
+
+    <!-- Offline Maps & Home Zone -->
+    <string name="settings_offline_maps_title">ऑफ़लाइन मानचित्र</string>
+    <string name="settings_offline_maps_sub">गृह क्षेत्र डाउनलोड और संग्रहण</string>
+    <string name="offline_maps_screen_title">ऑफ़लाइन मानचित्र</string>
+    <string name="offline_maps_home_zone_header">गृह क्षेत्र</string>
+    <string name="offline_maps_home_zone_desc">आपके गृह क्षेत्र के लिए उच्च-रिज़ॉल्यूशन वेक्टर टाइल्स (ज़ूम 15 तक) और आश्रय ऑफ़लाइन आपात स्थितियों के लिए स्थायी रूप से सुरक्षित हैं।</string>
+    <string name="offline_maps_pack_size_label">गृह पैक आकार</string>
+    <string name="offline_maps_storage_used_label">प्रयुक्त संग्रहण</string>
+    <string name="offline_maps_status_label">डाउनलोड स्थिति</string>
+    <string name="offline_maps_status_not_configured">डाउनलोड नहीं किया गया</string>
+    <string name="offline_maps_status_downloading">डाउनलोड हो रहा है (%1$d%%)…</string>
+    <string name="offline_maps_status_ready">ऑफ़लाइन तैयार</string>
+    <string name="offline_maps_status_failed">डाउनलोड विफल</string>
+    <string name="offline_maps_redownload_button">गृह पैक पुनः डाउनलोड करें</string>
+    <string name="offline_maps_change_zone_button">गृह क्षेत्र बदलें</string>
+    <string name="offline_maps_delete_button">गृह पैक हटाएं</string>
+    <string name="offline_maps_allow_mobile_title">मोबाइल डेटा पर डाउनलोड करें</string>
+    <string name="offline_maps_allow_mobile_desc">मोबाइल नेटवर्क पर ऑफ़लाइन मानचित्र पैक डाउनलोड करने की अनुमति दें</string>
+    <string name="offline_maps_storage_info">%1$.1f MB प्रयुक्त • %2$.1f MB खाली</string>
+    <string name="offline_maps_delete_confirm_title">गृह पैक हटाएं?</string>
+    <string name="offline_maps_delete_confirm_desc">यह आपके गृह क्षेत्र के स्थानीय ऑफ़लाइन सड़क मानचित्र हटा देगा। ऑफ़लाइन होने पर आपको केवल मोटा आधार मानचित्र दिखेगा।</string>
+    <string name="offline_maps_delete_confirm_btn">हटाएं</string>
+
+    <!-- Onboarding Home Area Step -->
+    <string name="onboarding_home_zone_title">अपना गृह क्षेत्र चुनें</string>
+    <string name="onboarding_home_zone_desc">चुनें कि आप कहाँ रहते हैं या कार्य करते हैं। इस क्षेत्र की सड़कें, स्थल और आश्रय आपके फोन पर ऑफ़लाइन सुरक्षित रहेंगे।</string>
+    <string name="onboarding_home_zone_search_hint">शहर या राज्य खोजें…</string>
+    <string name="onboarding_home_zone_use_gps">वर्तमान स्थान का उपयोग करें</string>
+    <string name="onboarding_home_zone_radius_label">कवरेज दायरा: %1$.0f किमी</string>
+    <string name="onboarding_home_zone_confirm">गृह क्षेत्र सुरक्षित करें</string>
+    <string name="onboarding_home_zone_saved">गृह क्षेत्र विन्यस्त: %1$s</string>
+
+    <!-- Home Pack Notifications -->
+    <string name="home_pack_channel_name">ऑफ़लाइन मानचित्र डाउनलोड</string>
+    <string name="home_pack_channel_desc">ऑफ़लाइन मानचित्र पैक डाउनलोड के लिए प्रगति सूचनाएं</string>
+    <string name="home_pack_downloading_title">%1$s ऑफ़लाइन मानचित्र डाउनलोड हो रहा है</string>
+    <string name="home_pack_downloading_progress">%1$d%% डाउनलोड हुआ</string>
+    <string name="home_pack_ready_title">गृह क्षेत्र: ऑफ़लाइन तैयार</string>
+    <string name="home_pack_ready_desc">%1$s के लिए ऑफ़लाइन मानचित्र पैक बिना इंटरनेट उपयोग के लिए तैयार है।</string>
+    <string name="home_pack_failed_title">%1$s के लिए डाउनलोड विफल</string>
+    <string name="home_pack_storage_warning">अपर्याप्त संग्रहण: %1$d MB खाली, कम से कम 100 MB चाहिए।</string>
 </resources>

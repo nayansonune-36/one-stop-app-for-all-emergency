@@ -34,10 +34,16 @@ class BotRepository(
                     .build()
 
                 client.newCall(request).execute().use { response ->
-                    if (!response.isSuccessful) {
-                        return@withContext Result.failure(Exception("HTTP ${response.code}"))
-                    }
                     val respBody = response.body?.string() ?: ""
+                    if (!response.isSuccessful) {
+                        val backendError = try {
+                            val errJson = json.decodeFromString<Map<String, String>>(respBody)
+                            errJson["error"]
+                        } catch (_: Exception) {
+                            null
+                        }
+                        return@withContext Result.failure(Exception(backendError ?: "HTTP ${response.code}"))
+                    }
                     val chatResponse = json.decodeFromString<ChatResponse>(respBody)
                     Result.success(chatResponse)
                 }
