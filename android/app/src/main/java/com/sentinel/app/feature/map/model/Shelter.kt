@@ -31,8 +31,8 @@ data class Shelter(
     val capacity: Int? = null,
     val address: String = "",
     val phone: String? = null,
-    val source: String = "",
-    val verified: String = "",
+    val source: String? = null,
+    val verified: String? = null,
     val state: String = "",
     @SerialName("coord_precision")
     val coordPrecision: String = "exact",
