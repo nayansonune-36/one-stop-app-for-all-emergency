@@ -140,6 +140,12 @@ class SosViewModel(
         }
     }
 
+    fun restartMesh() {
+        checkPermissions()
+        refreshHardwareStates()
+        meshManager.startMesh(forceRestart = true)
+    }
+
     fun onPermissionsResult() {
         checkPermissions()
         refreshHardwareStates()

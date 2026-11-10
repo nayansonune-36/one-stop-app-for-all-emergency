@@ -19,9 +19,12 @@ import com.google.android.gms.nearby.connection.PayloadTransferUpdate
 import com.google.android.gms.nearby.connection.Strategy
 import com.sentinel.app.BuildConfig
 import com.sentinel.app.core.network.ConnectivityObserver
+import com.google.android.gms.common.api.ApiException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -57,7 +60,7 @@ class MeshManager(
     }
 
     private val connectionsClient: ConnectionsClient = Nearby.getConnectionsClient(context)
-    private val myEndpointName = "SENTINEL-${Build.MODEL.take(6)}-${UUID.randomUUID().toString().take(4)}"
+    private val myEndpointName = "SENTINEL-${Build.MODEL.replace(" ", "").take(6)}-${UUID.randomUUID().toString().take(4)}"
 
     // State flows for UI and observers
     private val _connectedPeers = MutableStateFlow<List<String>>(emptyList())
@@ -84,6 +87,7 @@ class MeshManager(
     // Bounded set of seen SOS message UUIDs
     private val seenIds = LinkedHashSet<String>()
     private val pendingEndpoints = mutableSetOf<String>()
+    private var periodicDiscoveryJob: Job? = null
 
     private val httpClient = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
@@ -112,19 +116,25 @@ class MeshManager(
     /**
      * Starts advertising and discovery concurrently to join the peer-to-peer cluster.
      */
-    fun startMesh() {
+    fun startMesh(forceRestart: Boolean = false) {
         if (!MeshPermissionHelper.hasAllPermissions(context)) {
             addLog("Missing mesh permissions, cannot start advertising/discovery")
             return
         }
 
-        if (_isMeshActive.value) return
+        if (_isMeshActive.value && !forceRestart) return
 
         _isMeshActive.value = true
         addLog("Starting mesh node ($myEndpointName) with SERVICE_ID: $SERVICE_ID")
 
+        try {
+            connectionsClient.stopAdvertising()
+            connectionsClient.stopDiscovery()
+        } catch (_: Exception) {}
+
         startAdvertising()
         startDiscovery()
+        startPeriodicDiscovery()
     }
 
     /**
@@ -132,14 +142,38 @@ class MeshManager(
      */
     fun stopMesh() {
         try {
+            periodicDiscoveryJob?.cancel()
+            periodicDiscoveryJob = null
             connectionsClient.stopAdvertising()
             connectionsClient.stopDiscovery()
             connectionsClient.stopAllEndpoints()
             _connectedPeers.value = emptyList()
+            pendingEndpoints.clear()
             _isMeshActive.value = false
             addLog("Mesh node stopped")
         } catch (e: Exception) {
             addLog("Error stopping mesh: ${e.message}")
+        }
+    }
+
+    private fun startPeriodicDiscovery() {
+        periodicDiscoveryJob?.cancel()
+        periodicDiscoveryJob = scope.launch {
+            while (_isMeshActive.value) {
+                delay(15000)
+                if (_isMeshActive.value && _connectedPeers.value.isEmpty()) {
+                    addLog("Refreshing discovery scan...")
+                    try {
+                        connectionsClient.stopDiscovery()
+                        delay(400)
+                        if (_isMeshActive.value) {
+                            startDiscovery()
+                        }
+                    } catch (e: Exception) {
+                        Log.d(TAG, "Discovery refresh error: ${e.message}")
+                    }
+                }
+            }
         }
     }
 
@@ -156,7 +190,8 @@ class MeshManager(
         ).addOnSuccessListener {
             addLog("Advertising started successfully")
         }.addOnFailureListener { e ->
-            addLog("Failed to start advertising: ${e.message}")
+            val code = (e as? ApiException)?.statusCode ?: -1
+            addLog("Failed to start advertising ($code): ${e.message}")
         }
     }
 
@@ -172,7 +207,8 @@ class MeshManager(
         ).addOnSuccessListener {
             addLog("Discovery started successfully")
         }.addOnFailureListener { e ->
-            addLog("Failed to start discovery: ${e.message}")
+            val code = (e as? ApiException)?.statusCode ?: -1
+            addLog("Failed to start discovery ($code): ${e.message}")
         }
     }
 
@@ -180,15 +216,45 @@ class MeshManager(
     private val endpointDiscoveryCallback = object : EndpointDiscoveryCallback() {
         override fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo) {
             addLog("Discovered peer: ${info.endpointName} ($endpointId)")
-            if (!_connectedPeers.value.contains(endpointId) && !pendingEndpoints.contains(endpointId)) {
+            if (_connectedPeers.value.contains(endpointId) || pendingEndpoints.contains(endpointId)) {
+                return
+            }
+
+            // Deterministic tie-breaker:
+            // Compare endpoint names lexicographically.
+            // Node with smaller name initiates connection request.
+            // Node with larger name waits for incoming request to avoid bidirectional clash.
+            val shouldInitiate = myEndpointName < info.endpointName
+            if (shouldInitiate) {
                 pendingEndpoints.add(endpointId)
+                addLog("Initiating connection to ${info.endpointName} ($endpointId)...")
                 connectionsClient.requestConnection(
                     myEndpointName,
                     endpointId,
                     connectionLifecycleCallback
                 ).addOnFailureListener { e ->
+                    val code = (e as? ApiException)?.statusCode ?: -1
                     pendingEndpoints.remove(endpointId)
-                    addLog("Failed to request connection to $endpointId: ${e.message}")
+                    addLog("Failed to request connection to $endpointId ($code): ${e.message}")
+                }
+            } else {
+                addLog("Discovered ${info.endpointName}, waiting for peer to initiate connection...")
+                // Fallback: If no connection initiated by peer within 4s, attempt connection
+                scope.launch {
+                    delay(4000)
+                    if (_isMeshActive.value && !_connectedPeers.value.contains(endpointId) && !pendingEndpoints.contains(endpointId)) {
+                        pendingEndpoints.add(endpointId)
+                        addLog("Fallback initiating connection to $endpointId...")
+                        connectionsClient.requestConnection(
+                            myEndpointName,
+                            endpointId,
+                            connectionLifecycleCallback
+                        ).addOnFailureListener { e ->
+                            val code = (e as? ApiException)?.statusCode ?: -1
+                            pendingEndpoints.remove(endpointId)
+                            addLog("Fallback request failed for $endpointId ($code): ${e.message}")
+                        }
+                    }
                 }
             }
         }
@@ -205,7 +271,8 @@ class MeshManager(
             addLog("Connection initiated from ${info.endpointName} ($endpointId), auto-accepting...")
             connectionsClient.acceptConnection(endpointId, payloadCallback)
                 .addOnFailureListener { e ->
-                    addLog("Failed to accept connection from $endpointId: ${e.message}")
+                    val code = (e as? ApiException)?.statusCode ?: -1
+                    addLog("Failed to accept connection from $endpointId ($code): ${e.message}")
                 }
         }
 
@@ -219,13 +286,27 @@ class MeshManager(
                     }
                 }
                 ConnectionsStatusCodes.STATUS_ALREADY_CONNECTED_TO_ENDPOINT -> {
+                    addLog("Already connected to peer: $endpointId")
                     if (!_connectedPeers.value.contains(endpointId)) {
                         _connectedPeers.value = _connectedPeers.value + endpointId
                     }
                 }
                 else -> {
-                    addLog("Connection rejected/failed for $endpointId: ${resolution.status.statusMessage}")
+                    addLog("Connection rejected/failed for $endpointId: code ${resolution.status.statusCode} ${resolution.status.statusMessage}")
                     _connectedPeers.value = _connectedPeers.value - endpointId
+                    // Restart discovery after brief delay so devices can rediscover each other
+                    scope.launch {
+                        delay(2000)
+                        if (_isMeshActive.value && _connectedPeers.value.isEmpty()) {
+                            try {
+                                connectionsClient.stopDiscovery()
+                                delay(300)
+                                if (_isMeshActive.value) {
+                                    startDiscovery()
+                                }
+                            } catch (_: Exception) {}
+                        }
+                    }
                 }
             }
         }
@@ -234,6 +315,19 @@ class MeshManager(
             addLog("Peer disconnected: $endpointId")
             pendingEndpoints.remove(endpointId)
             _connectedPeers.value = _connectedPeers.value - endpointId
+            // Restart discovery to reconnect when peer comes back
+            scope.launch {
+                delay(1000)
+                if (_isMeshActive.value && _connectedPeers.value.isEmpty()) {
+                    try {
+                        connectionsClient.stopDiscovery()
+                        delay(300)
+                        if (_isMeshActive.value) {
+                            startDiscovery()
+                        }
+                    } catch (_: Exception) {}
+                }
+            }
         }
     }
 

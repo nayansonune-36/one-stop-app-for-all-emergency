@@ -9,11 +9,13 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -249,7 +251,8 @@ fun SosScreen(
         if (uiState.isBroadcasting) {
             ActiveSosDashboard(
                 uiState = uiState,
-                onCancelClick = { viewModel.openCancelDialog() }
+                onCancelClick = { viewModel.openCancelDialog() },
+                onOpenDiagnostics = { viewModel.toggleDebugPanel() }
             )
         } else {
             IdleSosHoldRing(
@@ -375,7 +378,8 @@ fun SosScreen(
     if (uiState.showDebugPanel) {
         SosDebugPanelDialog(
             uiState = uiState,
-            onDismiss = { viewModel.dismissDebugPanel() }
+            onDismiss = { viewModel.dismissDebugPanel() },
+            onRestartMesh = { viewModel.restartMesh() }
         )
     }
 }
@@ -383,7 +387,8 @@ fun SosScreen(
 @Composable
 private fun ActiveSosDashboard(
     uiState: SosUiState,
-    onCancelClick: () -> Unit
+    onCancelClick: () -> Unit,
+    onOpenDiagnostics: () -> Unit = {}
 ) {
     Card(
         shape = CardShape,
@@ -431,7 +436,9 @@ private fun ActiveSosDashboard(
                 Surface(
                     shape = RoundedCornerShape(99.dp),
                     color = if (uiState.peersCount > 0) DarkGreenBg else DarkAmberBg,
-                    modifier = Modifier.height(30.dp)
+                    modifier = Modifier
+                        .height(30.dp)
+                        .clickable { onOpenDiagnostics() }
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 10.dp),
@@ -816,7 +823,8 @@ private fun HardwareDisabledCard(
 @Composable
 private fun SosDebugPanelDialog(
     uiState: SosUiState,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onRestartMesh: () -> Unit = {}
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -828,12 +836,28 @@ private fun SosDebugPanelDialog(
                 .height(480.dp)
         ) {
             Column(modifier = Modifier.padding(spacing.medium)) {
-                Text(
-                    text = stringResource(R.string.debug_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.debug_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    OutlinedButton(
+                        onClick = onRestartMesh,
+                        shape = ButtonShape,
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "Restart Mesh",
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(spacing.small))
 
                 LazyColumn(modifier = Modifier.weight(1f)) {
